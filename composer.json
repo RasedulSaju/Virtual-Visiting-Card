@@ -1,0 +1,17 @@
+{
+    "name": "vvc/virtual-visiting-card",
+    "description": "Virtual Visiting Card — PHP CMS & User Portal",
+    "type": "project",
+    "require": {
+        "php": ">=8.0",
+        "phpmailer/phpmailer": "^6.9"
+    },
+    "autoload": {
+        "psr-4": {
+            "VVC\\": "src/"
+        }
+    },
+    "config": {
+        "optimize-autoloader": true
+    }
+}

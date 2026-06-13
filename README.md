@@ -62,8 +62,10 @@ A custom lightweight CMS and User Portal built with **PHP 8+**, **MySQL**, and *
 ### 1. Database
 
 ```sql
--- Import:
+-- Import in order:
 SOURCE schema.sql;
+SOURCE migration_001_registration_controls.sql;
+SOURCE migration_002_smtp_settings.sql;
 ```
 
 ### 2. Configuration
@@ -89,7 +91,7 @@ define('BASE_URL', 'http://yourdomain.com/');  // trailing slash required
 Visit `http://yourdomain.com/setup.php` in your browser.  
 **Delete `setup.php` immediately after creating your admin account.**
 
-### 4. Directory Permissions (Optional)
+### 4. Directory Permissions
 
 ```bash
 chmod 755 uploads/profiles
@@ -125,7 +127,9 @@ location / {
 ├── helpers.php                # Shared functions (session, CSRF, flash, upload)
 ├── db.php                     # PDO singleton
 ├── mailer.php                 # PHPMailer wrapper
-├── schema.sql                 # Initial DB schema + seed data + Registration controls + invitations tables + SMTP settings keys
+├── schema.sql                 # Initial DB schema + seed data
+├── migration_001_*.sql        # Registration controls + invitations tables
+├── migration_002_*.sql        # SMTP settings keys
 ├── setup.php                  # One-time admin account creator (delete after use)
 │
 ├── login.php / logout.php / register.php
@@ -160,7 +164,7 @@ location / {
 │   └── img/default-avatar.svg
 │
 └── uploads/
-    └── profiles/              # User-uploaded images
+    └── profiles/              # User-uploaded images (gitignored)
 ```
 
 ---

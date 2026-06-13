@@ -171,6 +171,11 @@ function uploadProfileImage(array $file, int $userId): string
         throw new RuntimeException('File content does not match an allowed image type.');
     }
 
+    // Ensure directory exists (Windows XAMPP compatibility)
+    if (!is_dir(UPLOAD_DIR) && !mkdir(UPLOAD_DIR, 0755, true)) {
+        throw new RuntimeException('Upload directory could not be created: ' . UPLOAD_DIR);
+    }
+
     $newName = sprintf('user_%d_%d.%s', $userId, time(), $ext);
     $dest    = UPLOAD_DIR . $newName;
 
