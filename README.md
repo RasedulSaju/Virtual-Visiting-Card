@@ -89,10 +89,10 @@ define('BASE_URL', 'http://yourdomain.com/');  // trailing slash required
 Visit `http://yourdomain.com/setup.php` in your browser.  
 **Delete `setup.php` immediately after creating your admin account.**
 
-### 4. Directory Permissions
+### 4. Directory Permissions (Optional)
 
 ```bash
-755 uploads/profiles
+chmod 755 uploads/profiles
 ```
 
 ### 5. Email (Optional)
