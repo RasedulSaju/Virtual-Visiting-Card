@@ -125,7 +125,7 @@ location / {
 ├── helpers.php                # Shared functions (session, CSRF, flash, upload)
 ├── db.php                     # PDO singleton
 ├── mailer.php                 # PHPMailer wrapper
-├── schema.sql                 # Initial DB schema + seed data # Registration controls + invitations tables # SMTP settings keys
+├── schema.sql                 # Initial DB schema + seed data + Registration controls + invitations tables + SMTP settings keys
 ├── setup.php                  # One-time admin account creator (delete after use)
 │
 ├── login.php / logout.php / register.php
