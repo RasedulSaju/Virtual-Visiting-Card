@@ -28,7 +28,7 @@ class Mailer
             'password'   => getSetting('smtp_password'),
             'encryption' => getSetting('smtp_encryption', 'tls'),
             'from_email' => getSetting('smtp_from_email'),
-            'from_name'  => getSetting('smtp_from_name',  APP_NAME),
+            'from_name'  => getSetting('smtp_from_name', siteName()),
         ];
     }
 
@@ -118,7 +118,7 @@ class Mailer
                         border-radius:12px;padding:40px;box-shadow:0 2px 16px rgba(0,0,0,.08);">
                 <div style="margin-bottom:24px;">
                     <span style="font-size:1.4rem;font-weight:700;color:#4f46e5;">'
-                        . htmlspecialchars(APP_NAME, ENT_QUOTES) .
+                        . htmlspecialchars(siteName(), ENT_QUOTES) .
                     '</span>
                 </div>
                 <h2 style="color:#0f172a;margin:0 0 16px;">' . $heading . '</h2>
@@ -126,7 +126,7 @@ class Mailer
                 ' . $cta . '
                 <hr style="border:none;border-top:1px solid #e2e8f0;margin:32px 0 16px;">
                 <p style="color:#9ca3af;font-size:.8rem;margin:0;">
-                    This email was sent by ' . htmlspecialchars(APP_NAME, ENT_QUOTES) . '.
+                    This email was sent by ' . htmlspecialchars(siteName(), ENT_QUOTES) . '.
                     If you did not request this, please ignore it.
                 </p>
             </div></body></html>';

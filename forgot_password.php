@@ -49,7 +49,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         $resetLink,
                         'Reset My Password'
                     );
-                    $sent = $mailer->send($email, $email, 'Reset your ' . APP_NAME . ' password', $html);
+                    $sent = $mailer->send($email, $email, 'Reset your ' . siteName() . ' password', $html);
                     if ($sent) $resetLink = null; // hide link — real email was sent
                 } catch (Exception $ex) {
                     error_log('[ForgotPassword/Mailer] ' . $ex->getMessage());

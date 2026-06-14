@@ -72,7 +72,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <div class="setup-card">
     <div class="setup-header">
         <i class="fas fa-layer-group fa-2x mb-3"></i>
-        <h4 class="mb-1 fw-bold"><?= htmlspecialchars(APP_NAME) ?></h4>
+        <h4 class="mb-1 fw-bold"><?= htmlspecialchars(siteName()) ?></h4>
         <p class="mb-0 opacity-75">Initial Setup — Create Admin Account</p>
     </div>
     <div class="card shadow-sm border-0 rounded-0" style="border-radius: 0 0 12px 12px !important;">

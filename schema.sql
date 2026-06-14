@@ -117,67 +117,25 @@ INSERT INTO `profile_fields`
 -- Run setup.php in your browser immediately after importing this file.
 
 -- ============================================================
--- Migration 001 — Registration Controls
--- Run AFTER schema.sql
+-- SMTP Settings
 -- ============================================================
-
--- ── Settings table (key/value store for admin toggles) ───────
-CREATE TABLE IF NOT EXISTS `settings` (
-  `skey`       VARCHAR(100) NOT NULL,
-  `value`      TEXT         NOT NULL DEFAULT '',
-  `updated_at` DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP
-               ON UPDATE CURRENT_TIMESTAMP,
-  PRIMARY KEY (`skey`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 INSERT INTO `settings` (`skey`, `value`) VALUES
-  ('registration_open', '1')
+  ('smtp_host',       ''),
+  ('smtp_port',       '587'),
+  ('smtp_username',   ''),
+  ('smtp_password',   ''),
+  ('smtp_encryption', 'tls'),
+  ('smtp_from_email', ''),
+  ('smtp_from_name',  '')
 ON DUPLICATE KEY UPDATE `value` = VALUES(`value`);
 
--- ── Invitations table ────────────────────────────────────────
-CREATE TABLE IF NOT EXISTS `invitations` (
-  `id`         INT UNSIGNED NOT NULL AUTO_INCREMENT,
-  `email`      VARCHAR(150) NOT NULL,
-  `token`      VARCHAR(64)  NOT NULL,
-  `invited_by` INT UNSIGNED NOT NULL  COMMENT 'Admin user ID',
-  `used`       TINYINT(1)   NOT NULL DEFAULT 0,
-  `expires_at` DATETIME     NOT NULL,
-  `created_at` DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `uq_token` (`token`),
-  CONSTRAINT `fk_inv_admin` FOREIGN KEY (`invited_by`)
-      REFERENCES `users`(`id`) ON DELETE CASCADE ON UPDATE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- ============================================================
--- Migration 001 — Registration Controls
--- Run AFTER schema.sql
+-- Site Identity Settings
 -- ============================================================
-
--- ── Settings table (key/value store for admin toggles) ───────
-CREATE TABLE IF NOT EXISTS `settings` (
-  `skey`       VARCHAR(100) NOT NULL,
-  `value`      TEXT         NOT NULL DEFAULT '',
-  `updated_at` DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP
-               ON UPDATE CURRENT_TIMESTAMP,
-  PRIMARY KEY (`skey`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 INSERT INTO `settings` (`skey`, `value`) VALUES
-  ('registration_open', '1')
+  ('site_name',        'Virtual Visiting Card'),
+  ('site_description', 'Create and share your digital visiting card.')
 ON DUPLICATE KEY UPDATE `value` = VALUES(`value`);
-
--- ── Invitations table ────────────────────────────────────────
-CREATE TABLE IF NOT EXISTS `invitations` (
-  `id`         INT UNSIGNED NOT NULL AUTO_INCREMENT,
-  `email`      VARCHAR(150) NOT NULL,
-  `token`      VARCHAR(64)  NOT NULL,
-  `invited_by` INT UNSIGNED NOT NULL  COMMENT 'Admin user ID',
-  `used`       TINYINT(1)   NOT NULL DEFAULT 0,
-  `expires_at` DATETIME     NOT NULL,
-  `created_at` DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `uq_token` (`token`),
-  CONSTRAINT `fk_inv_admin` FOREIGN KEY (`invited_by`)
-      REFERENCES `users`(`id`) ON DELETE CASCADE ON UPDATE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;

@@ -34,8 +34,8 @@ $members = $listStmt->fetchAll();
 $pageTitle = 'Members';
 $ogData = [
     'type'        => 'website',
-    'title'       => 'Members — ' . APP_NAME,
-    'description' => 'Browse all members of ' . APP_NAME,
+    'title'       => 'Members — ' . siteName(),
+    'description' => 'Browse all members of ' . siteName(),
     'url'         => BASE_URL . 'members',
 ];
 

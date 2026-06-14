@@ -231,3 +231,29 @@ function setSetting(string $key, string $value): void
          ON DUPLICATE KEY UPDATE `value` = VALUES(`value`)'
     )->execute([$key, $value]);
 }
+
+// ── Dynamic site identity (reads from settings, falls back to config) ──
+function siteName(): string
+{
+    static $_cached = null;
+    if ($_cached === null) {
+        try { $_cached = getSetting('site_name') ?: APP_NAME; }
+        catch (Exception) { $_cached = APP_NAME; }
+    }
+    return $_cached;
+}
+
+function siteDescription(): string
+{
+    static $_cached = null;
+    if ($_cached === null) {
+        try { $_cached = getSetting('site_description') ?: APP_DESCRIPTION; }
+        catch (Exception) { $_cached = APP_DESCRIPTION; }
+    }
+    return $_cached;
+}
+
+function siteUrl(): string
+{
+    return BASE_URL;
+}

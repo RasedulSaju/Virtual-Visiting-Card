@@ -170,7 +170,7 @@ require __DIR__ . '/templates/layout_header.php';
                 </div>
                 <h1 class="h4 fw-bold mb-1">Create Account</h1>
                 <p class="text-muted small mb-0">
-                    <?= $inviteValid ? '<i class="fas fa-envelope-open-text me-1 text-success"></i>You were invited to join ' . e(APP_NAME) : 'Join ' . e(APP_NAME) ?>
+                    <?= $inviteValid ? '<i class="fas fa-envelope-open-text me-1 text-success"></i>You were invited to join ' . e(siteName()) : 'Join ' . e(siteName()) ?>
                 </p>
             </div>
             <div class="card-body p-4 pt-3">

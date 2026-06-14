@@ -58,7 +58,7 @@ require __DIR__ . '/templates/layout_header.php';
                 <div class="auth-icon-wrap mb-3">
                     <i class="fas fa-layer-group fa-2x"></i>
                 </div>
-                <h1 class="h4 fw-bold mb-1"><?= e(APP_NAME) ?></h1>
+                <h1 class="h4 fw-bold mb-1"><?= e(siteName()) ?></h1>
                 <p class="text-muted small mb-0">Sign in to your account</p>
             </div>
             <div class="card-body p-4 pt-3">

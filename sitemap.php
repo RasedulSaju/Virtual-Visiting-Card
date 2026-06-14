@@ -10,8 +10,7 @@ header('X-Robots-Tag: noindex');
 
 $pages   = $pdo->query("SELECT slug, updated_at FROM pages ORDER BY nav_order ASC")->fetchAll();
 $users   = $pdo->query("SELECT username, created_at FROM users ORDER BY created_at DESC")->fetchAll();
-
-$now = date('Y-m-d');
+$now     = date('Y-m-d');
 
 echo '<?xml version="1.0" encoding="UTF-8"?>' . "\n";
 ?>
