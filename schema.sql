@@ -30,6 +30,7 @@ CREATE TABLE `users` (
   `password_hash`    VARCHAR(255)         NOT NULL,
   `role`             ENUM('admin','user') NOT NULL DEFAULT 'user',
   `can_edit_profile` TINYINT(1)           NOT NULL DEFAULT 1,
+  `meta_robots`      VARCHAR(20)          NOT NULL DEFAULT 'index,follow',
   `profile_image`    VARCHAR(255)         NOT NULL DEFAULT 'default-avatar.png',
   `bio`              TEXT,
   `reset_token`      VARCHAR(64)              NULL DEFAULT NULL,
@@ -51,6 +52,7 @@ CREATE TABLE `pages` (
   `content`     LONGTEXT,
   `show_in_nav` TINYINT(1)   NOT NULL DEFAULT 0,
   `nav_order`   INT          NOT NULL DEFAULT 0,
+  `meta_robots` VARCHAR(20)  NOT NULL DEFAULT 'index,follow',
   `updated_at`  DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP
                              ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`),
@@ -172,7 +174,7 @@ INSERT INTO `settings` (`skey`, `value`) VALUES
 ON DUPLICATE KEY UPDATE `value` = VALUES(`value`);
 
 -- ============================================================
--- Appearance Settings
+-- Theme / Appearance Settings
 -- ============================================================
 
 INSERT INTO `settings` (`skey`, `value`) VALUES

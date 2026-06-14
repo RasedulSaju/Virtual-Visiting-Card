@@ -1,0 +1,47 @@
+# ============================================================
+# .htaccess — Virtual Visiting Card
+# Works at root OR any subfolder — no RewriteBase needed.
+# ============================================================
+
+Options -Indexes -MultiViews
+ServerSignature Off
+
+# ─── Block sensitive files ────────────────────────────────────
+<FilesMatch "\.(sql|env|log|bak|sh|ini|md)$">
+    Require all denied
+</FilesMatch>
+<FilesMatch "^(config|app-defaults|db|helpers|mailer|auth_check)\.php$">
+    Require all denied
+</FilesMatch>
+<FilesMatch "^\.">
+    Require all denied
+</FilesMatch>
+
+# ─── Security headers ─────────────────────────────────────────
+<IfModule mod_headers.c>
+    Header always set X-Content-Type-Options  "nosniff"
+    Header always set X-Frame-Options         "SAMEORIGIN"
+    Header always set X-XSS-Protection        "1; mode=block"
+    Header always set Referrer-Policy         "strict-origin-when-cross-origin"
+</IfModule>
+
+# ─── URL Rewriting ────────────────────────────────────────────
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+
+    # Skip real files and directories
+    RewriteCond %{REQUEST_FILENAME} !-f
+    RewriteCond %{REQUEST_FILENAME} !-d
+
+    # Route everything to index.php — URL parsed from REQUEST_URI
+    RewriteRule ^ index.php [L]
+</IfModule>
+
+# ─── PHP settings ─────────────────────────────────────────────
+<IfModule mod_php.c>
+    php_flag  display_errors       Off
+    php_flag  log_errors           On
+    php_value session.cookie_httponly 1
+    php_value session.use_strict_mode 1
+    php_value session.cookie_samesite Lax
+</IfModule>

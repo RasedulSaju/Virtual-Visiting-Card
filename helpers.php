@@ -7,7 +7,7 @@ require_once __DIR__ . '/db.php';
 // ── Session bootstrap (called once on every request) ─────────
 if (session_status() === PHP_SESSION_NONE) {
     session_set_cookie_params([
-        'lifetime' => SESSION_LIFETIME,
+        'lifetime' => defined('SESSION_LIFETIME') ? SESSION_LIFETIME : 0,
         'path'     => '/',
         'secure'   => isset($_SERVER['HTTPS']),
         'httponly' => true,
