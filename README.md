@@ -62,10 +62,8 @@ A custom lightweight CMS and User Portal built with **PHP 8+**, **MySQL**, and *
 ### 1. Database
 
 ```sql
--- Import in order:
+-- Import:
 SOURCE schema.sql;
-SOURCE migration_001_registration_controls.sql;
-SOURCE migration_002_smtp_settings.sql;
 ```
 
 ### 2. Configuration
@@ -127,9 +125,7 @@ location / {
 ├── helpers.php                # Shared functions (session, CSRF, flash, upload)
 ├── db.php                     # PDO singleton
 ├── mailer.php                 # PHPMailer wrapper
-├── schema.sql                 # Initial DB schema + seed data
-├── migration_001_*.sql        # Registration controls + invitations tables
-├── migration_002_*.sql        # SMTP settings keys
+├── schema.sql                 # Initial DB schema + seed data + Registration controls + invitations tables + SMTP settings keys
 ├── setup.php                  # One-time admin account creator (delete after use)
 │
 ├── login.php / logout.php / register.php
