@@ -32,6 +32,7 @@ $listStmt->execute($params);
 $members = $listStmt->fetchAll();
 
 $pageTitle = 'Members';
+$metaRobots = resolveMetaRobots('index,follow');
 $ogData = [
     'type'        => 'website',
     'title'       => 'Members — ' . siteName(),

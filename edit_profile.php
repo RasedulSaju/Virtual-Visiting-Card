@@ -21,6 +21,7 @@ if (!$user) {
 // Gate: only admin or users with permission
 if (!isAdmin() && !(bool)$user['can_edit_profile']) {
     $pageTitle = 'Profile Editing Disabled';
+    $metaRobots = 'noindex,nofollow';
     require __DIR__ . '/templates/layout_header.php';
     ?>
     <div class="row justify-content-center">
@@ -108,6 +109,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 }
 
 $pageTitle = 'Edit Profile';
+$metaRobots = 'noindex,nofollow';
 require __DIR__ . '/templates/layout_header.php';
 ?>
 <div class="row justify-content-center">

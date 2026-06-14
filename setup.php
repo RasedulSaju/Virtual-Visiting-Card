@@ -67,6 +67,39 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         .setup-card { width: 100%; max-width: 440px; }
         .setup-header { background: linear-gradient(135deg, #4f46e5, #7c3aed); border-radius: 12px 12px 0 0; padding: 32px; color: white; text-align: center; }
         .warning-banner { background: #fef3c7; border: 1px solid #f59e0b; border-radius: 8px; padding: 12px 16px; font-size: 0.85rem; }
+
+        /* Floating labels — CSS only, no JS required */
+        .form-outline { position: relative; }
+        .form-outline > .form-control {
+            height: calc(3.5rem + 2px);
+            padding: 1rem .75rem;
+        }
+        .form-outline > .form-control::placeholder { color: transparent; }
+        .form-outline > .form-control:focus,
+        .form-outline > .form-control:not(:placeholder-shown) {
+            padding-top: 1.625rem;
+            padding-bottom: .625rem;
+        }
+        .form-outline > .form-label {
+            position: absolute; top: 0; left: 0; height: 100%;
+            padding: 1rem .75rem; margin-bottom: 0;
+            pointer-events: none; border: 1px solid transparent;
+            transform-origin: 0 0;
+            transition: opacity .1s ease-in-out, transform .1s ease-in-out;
+            color: #6b7280;
+        }
+        .form-outline > .form-control:focus ~ .form-label,
+        .form-outline > .form-control:not(:placeholder-shown) ~ .form-label {
+            opacity: .85;
+            transform: scale(.82) translateY(-.55rem) translateX(.15rem);
+            color: #4f46e5;
+            background: #fff;
+            padding-left: .35rem; padding-right: .35rem;
+        }
+        .form-outline > .form-control:focus {
+            border-color: #4f46e5 !important;
+            box-shadow: 0 0 0 .15rem rgba(79,70,229,.15) !important;
+        }
     </style>
 </head>
 <body>
@@ -103,22 +136,22 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 <form method="POST">
                     <div class="form-outline mb-3">
                         <input type="text" id="username" name="username" class="form-control"
-                               value="<?= htmlspecialchars($_POST['username'] ?? 'admin') ?>" required>
+                               value="<?= htmlspecialchars($_POST['username'] ?? 'admin') ?>" required placeholder=" ">
                         <label class="form-label" for="username">Username</label>
                     </div>
                     <div class="form-outline mb-3">
                         <input type="email" id="email" name="email" class="form-control"
-                               value="<?= htmlspecialchars($_POST['email'] ?? '') ?>" required>
+                               value="<?= htmlspecialchars($_POST['email'] ?? '') ?>" required placeholder=" ">
                         <label class="form-label" for="email">Email Address</label>
                     </div>
                     <div class="form-outline mb-3">
                         <input type="password" id="password" name="password" class="form-control"
-                               minlength="8" required>
+                               minlength="8" required placeholder=" ">
                         <label class="form-label" for="password">Password (min 8 chars)</label>
                     </div>
                     <div class="form-outline mb-4">
                         <input type="password" id="password2" name="password2" class="form-control"
-                               minlength="8" required>
+                               minlength="8" required placeholder=" ">
                         <label class="form-label" for="password2">Confirm Password</label>
                     </div>
                     <button type="submit" class="btn btn-primary w-100">
@@ -129,11 +162,5 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         </div>
     </div>
 </div>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/mdb-ui-kit/6.4.0/mdb.umd.min.js"></script>
-<script>
-    document.addEventListener('DOMContentLoaded', () => {
-        document.querySelectorAll('.form-outline').forEach(el => new mdb.Input(el).init());
-    });
-</script>
 </body>
 </html>

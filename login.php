@@ -49,6 +49,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 }
 
 $pageTitle = 'Login';
+$metaRobots = 'noindex,follow';
 require __DIR__ . '/templates/layout_header.php';
 ?>
 <div class="row justify-content-center">

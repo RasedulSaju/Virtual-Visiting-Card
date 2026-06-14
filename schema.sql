@@ -117,6 +117,38 @@ INSERT INTO `profile_fields`
 -- Run setup.php in your browser immediately after importing this file.
 
 -- ============================================================
+-- Registration Controls
+-- ============================================================
+
+-- ── Settings table (key/value store for admin toggles) ───────
+CREATE TABLE IF NOT EXISTS `settings` (
+  `skey`       VARCHAR(100) NOT NULL,
+  `value`      TEXT         NOT NULL DEFAULT '',
+  `updated_at` DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP
+               ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`skey`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+INSERT INTO `settings` (`skey`, `value`) VALUES
+  ('registration_open', '1')
+ON DUPLICATE KEY UPDATE `value` = VALUES(`value`);
+
+-- ── Invitations table ────────────────────────────────────────
+CREATE TABLE IF NOT EXISTS `invitations` (
+  `id`         INT UNSIGNED NOT NULL AUTO_INCREMENT,
+  `email`      VARCHAR(150) NOT NULL,
+  `token`      VARCHAR(64)  NOT NULL,
+  `invited_by` INT UNSIGNED NOT NULL  COMMENT 'Admin user ID',
+  `used`       TINYINT(1)   NOT NULL DEFAULT 0,
+  `expires_at` DATETIME     NOT NULL,
+  `created_at` DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `uq_token` (`token`),
+  CONSTRAINT `fk_inv_admin` FOREIGN KEY (`invited_by`)
+      REFERENCES `users`(`id`) ON DELETE CASCADE ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- ============================================================
 -- SMTP Settings
 -- ============================================================
 
@@ -130,7 +162,6 @@ INSERT INTO `settings` (`skey`, `value`) VALUES
   ('smtp_from_name',  '')
 ON DUPLICATE KEY UPDATE `value` = VALUES(`value`);
 
-
 -- ============================================================
 -- Site Identity Settings
 -- ============================================================
@@ -138,4 +169,41 @@ ON DUPLICATE KEY UPDATE `value` = VALUES(`value`);
 INSERT INTO `settings` (`skey`, `value`) VALUES
   ('site_name',        'Virtual Visiting Card'),
   ('site_description', 'Create and share your digital visiting card.')
+ON DUPLICATE KEY UPDATE `value` = VALUES(`value`);
+
+-- ============================================================
+-- Appearance Settings
+-- ============================================================
+
+INSERT INTO `settings` (`skey`, `value`) VALUES
+  ('theme_primary_color',   '#4f46e5'),
+  ('theme_accent_color',    '#7c3aed'),
+  ('theme_text_color',      '#374151'),
+  ('theme_heading_color',   '#0f172a'),
+  ('theme_bg_color',        '#f8fafc'),
+  ('theme_surface_color',   '#ffffff'),
+  ('theme_border_radius',   '12'),
+  ('theme_font_heading',    'Space Grotesk'),
+  ('theme_font_body',       'system-ui'),
+  ('theme_enable_animations','1')
+ON DUPLICATE KEY UPDATE `value` = VALUES(`value`);
+
+-- ============================================================
+-- SEO Controls (noindex/nofollow + robots.txt)
+-- ============================================================
+
+-- Per-page meta robots control
+ALTER TABLE `pages`
+  ADD COLUMN `meta_robots` VARCHAR(20) NOT NULL DEFAULT 'index,follow'
+  AFTER `nav_order`;
+
+-- Per-profile meta robots control
+ALTER TABLE `users`
+  ADD COLUMN `meta_robots` VARCHAR(20) NOT NULL DEFAULT 'index,follow'
+  AFTER `can_edit_profile`;
+
+-- Site-wide SEO settings
+INSERT INTO `settings` (`skey`, `value`) VALUES
+  ('seo_global_noindex', '0'),
+  ('robots_txt_custom',  '')
 ON DUPLICATE KEY UPDATE `value` = VALUES(`value`);

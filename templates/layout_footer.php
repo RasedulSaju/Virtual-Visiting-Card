@@ -65,11 +65,6 @@
 <script>
 document.addEventListener('DOMContentLoaded', () => {
 
-    // ── MDB floating label inputs ─────────────────────────────
-    document.querySelectorAll('.form-outline').forEach(el => {
-        try { new mdb.Input(el).init(); } catch(e) {}
-    });
-
     // ── Navbar collapse (mobile toggle) ──────────────────────
     const toggler = document.getElementById('navbarTogglerBtn');
     const navMain = document.getElementById('navMain');

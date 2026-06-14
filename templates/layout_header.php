@@ -34,6 +34,7 @@ $_og = array_merge([
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title><?= e($_pageTitle) ?></title>
     <meta name="description" content="<?= e($_og['description']) ?>">
+    <meta name="robots" content="<?= e($metaRobots ?? resolveMetaRobots()) ?>">
     <meta property="og:type"         content="<?= e($_og['type']) ?>">
     <meta property="og:title"        content="<?= e($_og['title']) ?>">
     <meta property="og:description"  content="<?= e($_og['description']) ?>">
@@ -50,6 +51,39 @@ $_og = array_merge([
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/mdb-ui-kit/6.4.0/mdb.min.css">
     <link rel="stylesheet" href="<?= BASE_URL ?>assets/css/custom.css">
+<?php
+// ── Dynamic theme variables (Admin → Settings → Appearance) ──
+$_theme = getTheme();
+?>
+    <style>
+        :root {
+            --cms-primary:      <?= e($_theme['primary_color']) ?>;
+            --cms-primary-dark: <?= e(darkenColor($_theme['primary_color'], 15)) ?>;
+            --cms-accent:       <?= e($_theme['accent_color']) ?>;
+            --cms-ink:          <?= e($_theme['heading_color']) ?>;
+            --cms-body:         <?= e($_theme['text_color']) ?>;
+            --cms-bg:           <?= e($_theme['bg_color']) ?>;
+            --cms-surface:      <?= e($_theme['surface_color']) ?>;
+            --cms-radius:       <?= (int)$_theme['border_radius'] ?>px;
+            --cms-font-display: '<?= e($_theme['font_heading']) ?>', system-ui, sans-serif;
+            --cms-font-body:    <?= e($_theme['font_body']) ?>, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+        }
+        <?php if ($_theme['enable_animations'] === '0'): ?>
+        *, *::before, *::after {
+            animation-duration: 0.001ms !important;
+            animation-iteration-count: 1 !important;
+            transition-duration: 0.001ms !important;
+            scroll-behavior: auto !important;
+        }
+        <?php endif; ?>
+    </style>
+<?php
+// Load custom font from Google Fonts if not the default
+if ($_theme['font_heading'] !== 'Space Grotesk' && $_theme['font_heading'] !== ''):
+    $_fontParam = str_replace(' ', '+', $_theme['font_heading']);
+?>
+    <link href="https://fonts.googleapis.com/css2?family=<?= e($_fontParam) ?>:wght@400;500;600;700&display=swap" rel="stylesheet">
+<?php endif; ?>
 <?php
 $_a_ga4     = getSetting('analytics_ga4_id');
 $_a_gtm     = getSetting('analytics_gtm_id');

@@ -232,13 +232,17 @@ function setSetting(string $key, string $value): void
     )->execute([$key, $value]);
 }
 
-// ── Dynamic site identity (reads from settings, falls back to config) ──
+// ── Dynamic site identity (reads from settings, falls back to defaults) ──
+const _SITE_NAME_FALLBACK        = 'Virtual Visiting Card';
+const _SITE_DESC_FALLBACK        = 'Create and share your digital visiting card.';
+
 function siteName(): string
 {
     static $_cached = null;
     if ($_cached === null) {
-        try { $_cached = getSetting('site_name') ?: APP_NAME; }
-        catch (Exception) { $_cached = APP_NAME; }
+        $fallback = defined('APP_NAME') ? APP_NAME : _SITE_NAME_FALLBACK;
+        try { $_cached = getSetting('site_name') ?: $fallback; }
+        catch (Exception) { $_cached = $fallback; }
     }
     return $_cached;
 }
@@ -247,8 +251,9 @@ function siteDescription(): string
 {
     static $_cached = null;
     if ($_cached === null) {
-        try { $_cached = getSetting('site_description') ?: APP_DESCRIPTION; }
-        catch (Exception) { $_cached = APP_DESCRIPTION; }
+        $fallback = defined('APP_DESCRIPTION') ? APP_DESCRIPTION : _SITE_DESC_FALLBACK;
+        try { $_cached = getSetting('site_description') ?: $fallback; }
+        catch (Exception) { $_cached = $fallback; }
     }
     return $_cached;
 }
@@ -256,4 +261,146 @@ function siteDescription(): string
 function siteUrl(): string
 {
     return BASE_URL;
+}
+
+// ── Theme settings (Admin → Settings → Appearance) ────────────
+function getTheme(): array
+{
+    static $_cached = null;
+    if ($_cached === null) {
+        $defaults = [
+            'primary_color'    => '#4f46e5',
+            'accent_color'     => '#7c3aed',
+            'text_color'       => '#374151',
+            'heading_color'    => '#0f172a',
+            'bg_color'         => '#f8fafc',
+            'surface_color'    => '#ffffff',
+            'border_radius'    => '12',
+            'font_heading'     => 'Space Grotesk',
+            'font_body'        => 'system-ui',
+            'enable_animations'=> '1',
+        ];
+        $_cached = $defaults;
+        try {
+            foreach ($defaults as $k => $v) {
+                $_cached[$k] = getSetting('theme_' . $k, $v) ?: $v;
+            }
+        } catch (Exception) {
+            // keep defaults
+        }
+    }
+    return $_cached;
+}
+
+/**
+ * Returns a hex color darkened by the given percentage (0-100).
+ * Used to generate hover/active states from the primary color.
+ */
+function darkenColor(string $hex, int $percent = 15): string
+{
+    $hex = ltrim($hex, '#');
+    if (strlen($hex) !== 6) return '#' . $hex;
+
+    $r = max(0, (int)hexdec(substr($hex, 0, 2)) * (100 - $percent) / 100);
+    $g = max(0, (int)hexdec(substr($hex, 2, 2)) * (100 - $percent) / 100);
+    $b = max(0, (int)hexdec(substr($hex, 4, 2)) * (100 - $percent) / 100);
+
+    return sprintf('#%02x%02x%02x', (int)$r, (int)$g, (int)$b);
+}
+
+/**
+ * Returns a hex color lightened/mixed toward white by the given percentage.
+ */
+function lightenColor(string $hex, int $percent = 90): string
+{
+    $hex = ltrim($hex, '#');
+    if (strlen($hex) !== 6) return '#' . $hex;
+
+    $r = (int)hexdec(substr($hex, 0, 2));
+    $g = (int)hexdec(substr($hex, 2, 2));
+    $b = (int)hexdec(substr($hex, 4, 2));
+
+    $r = (int)($r + (255 - $r) * $percent / 100);
+    $g = (int)($g + (255 - $g) * $percent / 100);
+    $b = (int)($b + (255 - $b) * $percent / 100);
+
+    return sprintf('#%02x%02x%02x', min(255,$r), min(255,$g), min(255,$b));
+}
+
+// ── SEO: meta robots tag content ──────────────────────────────
+/**
+ * Resolves the effective robots directive for a page/profile,
+ * combining the per-item setting with the site-wide noindex toggle.
+ *
+ * @param string $itemDirective e.g. 'index,follow', 'noindex,nofollow'
+ * @return string Final directive for <meta name="robots">
+ */
+function resolveMetaRobots(string $itemDirective = 'index,follow'): string
+{
+    $allowed = ['index,follow', 'noindex,follow', 'index,nofollow', 'noindex,nofollow'];
+    if (!in_array($itemDirective, $allowed, true)) {
+        $itemDirective = 'index,follow';
+    }
+
+    // Site-wide noindex overrides everything to noindex,nofollow
+    if (getSetting('seo_global_noindex', '0') === '1') {
+        return 'noindex,nofollow';
+    }
+
+    return $itemDirective;
+}
+
+function metaRobotsLabel(string $directive): string
+{
+    return match ($directive) {
+        'noindex,nofollow' => 'Hidden (noindex, nofollow)',
+        'noindex,follow'   => 'Noindex (links still followed)',
+        'index,nofollow'   => 'Indexed (links not followed)',
+        default            => 'Indexed (default)',
+    };
+}
+
+// ── SEO: build robots.txt content ─────────────────────────────
+function buildRobotsTxt(): string
+{
+    $custom = getSetting('robots_txt_custom', '');
+
+    if (trim($custom) !== '') {
+        $out = rtrim($custom);
+        // Ensure a Sitemap directive is present
+        if (stripos($out, 'sitemap:') === false) {
+            $out .= "\n\nSitemap: " . BASE_URL . "sitemap.xml";
+        }
+        return $out . "\n";
+    }
+
+    // Site-wide noindex → block everything
+    if (getSetting('seo_global_noindex', '0') === '1') {
+        return "User-agent: *\nDisallow: /\n";
+    }
+
+    // Default ruleset
+    $lines = [
+        'User-agent: *',
+        'Allow: /',
+        '',
+        '# Admin panel',
+        'Disallow: /admin/',
+        '',
+        '# Auth & account pages',
+        'Disallow: /login',
+        'Disallow: /logout',
+        'Disallow: /register',
+        'Disallow: /forgot-password',
+        'Disallow: /reset-password',
+        'Disallow: /change-password',
+        'Disallow: /edit-profile',
+        '',
+        '# Setup',
+        'Disallow: /setup.php',
+        '',
+        'Sitemap: ' . BASE_URL . 'sitemap.xml',
+    ];
+
+    return implode("\n", $lines) . "\n";
 }

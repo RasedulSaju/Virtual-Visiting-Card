@@ -29,6 +29,7 @@ if ($token !== '') {
 
 if ($token === '' || $tokenUser === null) {
     $pageTitle = 'Invalid Reset Link';
+    $metaRobots = 'noindex,nofollow';
     require __DIR__ . '/templates/layout_header.php';
     ?>
     <div class="row justify-content-center">
@@ -81,6 +82,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 }
 
 $pageTitle = 'Reset Password';
+$metaRobots = 'noindex,nofollow';
 require __DIR__ . '/templates/layout_header.php';
 ?>
 <div class="row justify-content-center">

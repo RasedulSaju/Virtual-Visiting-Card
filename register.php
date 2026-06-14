@@ -37,6 +37,7 @@ $registrationOpen = getSetting('registration_open', '1') === '1';
 
 if (!$registrationOpen && !$inviteValid) {
     $pageTitle = 'Registration Closed';
+    $metaRobots = 'noindex,nofollow';
     require __DIR__ . '/templates/layout_header.php';
     ?>
     <div class="row justify-content-center">
@@ -159,6 +160,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 }
 
 $pageTitle = 'Create Account';
+$metaRobots = 'noindex,follow';
 require __DIR__ . '/templates/layout_header.php';
 ?>
 <div class="row justify-content-center">

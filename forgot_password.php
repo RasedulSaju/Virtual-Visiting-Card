@@ -67,6 +67,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 }
 
 $pageTitle = 'Forgot Password';
+$metaRobots = 'noindex,nofollow';
 require __DIR__ . '/templates/layout_header.php';
 ?>
 <div class="row justify-content-center">

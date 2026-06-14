@@ -8,9 +8,22 @@ $pdo = getDB();
 header('Content-Type: application/xml; charset=UTF-8');
 header('X-Robots-Tag: noindex');
 
-$pages   = $pdo->query("SELECT slug, updated_at FROM pages ORDER BY nav_order ASC")->fetchAll();
-$users   = $pdo->query("SELECT username, created_at FROM users ORDER BY created_at DESC")->fetchAll();
-$now     = date('Y-m-d');
+// If the whole site is set to noindex, return an empty sitemap
+$globalNoindex = getSetting('seo_global_noindex', '0') === '1';
+
+$pages = $globalNoindex ? [] : $pdo->query(
+    "SELECT slug, updated_at FROM pages
+     WHERE meta_robots NOT LIKE '%noindex%'
+     ORDER BY nav_order ASC"
+)->fetchAll();
+
+$users = $globalNoindex ? [] : $pdo->query(
+    "SELECT username, created_at FROM users
+     WHERE meta_robots NOT LIKE '%noindex%'
+     ORDER BY created_at DESC"
+)->fetchAll();
+
+$now = date('Y-m-d');
 
 echo '<?xml version="1.0" encoding="UTF-8"?>' . "\n";
 ?>
@@ -19,6 +32,7 @@ echo '<?xml version="1.0" encoding="UTF-8"?>' . "\n";
         xsi:schemaLocation="http://www.sitemaps.org/schemas/sitemap/0.9
             http://www.sitemaps.org/schemas/sitemap/0.9/sitemap.xsd">
 
+    <?php if (!$globalNoindex): ?>
     <!-- Static system pages -->
     <url>
         <loc><?= e(BASE_URL) ?></loc>
@@ -32,6 +46,7 @@ echo '<?xml version="1.0" encoding="UTF-8"?>' . "\n";
         <priority>0.8</priority>
         <lastmod><?= $now ?></lastmod>
     </url>
+    <?php endif; ?>
 
     <!-- CMS Pages -->
     <?php foreach ($pages as $p): ?>

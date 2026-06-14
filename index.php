@@ -42,7 +42,8 @@ try {
     $page = $stmt->fetch();
 
     if ($page) {
-        $pageTitle = $page['title'];
+        $pageTitle  = $page['title'];
+        $metaRobots = resolveMetaRobots($page['meta_robots'] ?? 'index,follow');
         $ogData = [
             'type'        => 'article',
             'title'       => $page['title'] . ' — ' . siteName(),
@@ -74,7 +75,8 @@ try {
         $fStmt->execute([$profileUser['id']]);
         $profileFields = $fStmt->fetchAll();
 
-        $pageTitle = $profileUser['username'] . ' — ' . siteName();
+        $pageTitle  = $profileUser['username'] . ' — ' . siteName();
+        $metaRobots = resolveMetaRobots($profileUser['meta_robots'] ?? 'index,follow');
         $ogData = [
             'type'        => 'profile',
             'title'       => $profileUser['username'] . ' — ' . siteName(),
