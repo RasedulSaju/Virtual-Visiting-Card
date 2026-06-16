@@ -2,7 +2,7 @@
 /**
  * setup.php — One-Time Admin Account Creator
  *
- * Run this script ONCE in your browser immediately after importing schema.sql.
+ * Run this script ONCE in your browser immediately after importing install.sql.
  * DELETE this file from your server after successful setup.
  *
  * URL: http://yourdomain.com/setup.php

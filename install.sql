@@ -1,7 +1,7 @@
 -- ============================================================
--- CMS + User Portal — Database Schema
--- Charset : utf8mb4 / utf8mb4_unicode_ci
--- Engine  : InnoDB
+-- Virtual Visiting Card — Complete Database Installer
+-- Merges schema.sql + migrations 001-006 into a single file.
+-- Charset : utf8mb4 / utf8mb4_unicode_ci | Engine : InnoDB
 --
 -- INSTALL ORDER:
 --   1. Import this file into your MySQL database.
@@ -17,8 +17,10 @@ SET FOREIGN_KEY_CHECKS = 0;
 -- ────────────────────────────────────────────────────────────
 DROP TABLE IF EXISTS `user_field_values`;
 DROP TABLE IF EXISTS `profile_fields`;
+DROP TABLE IF EXISTS `invitations`;
 DROP TABLE IF EXISTS `pages`;
 DROP TABLE IF EXISTS `users`;
+DROP TABLE IF EXISTS `settings`;
 
 -- ────────────────────────────────────────────────────────────
 -- TABLE: users
@@ -44,6 +46,7 @@ CREATE TABLE `users` (
 -- ────────────────────────────────────────────────────────────
 -- TABLE: pages
 --   show_in_nav / nav_order control the public navigation menu.
+--   meta_robots controls per-page SEO visibility.
 -- ────────────────────────────────────────────────────────────
 CREATE TABLE `pages` (
   `id`          INT UNSIGNED NOT NULL AUTO_INCREMENT,
@@ -94,6 +97,36 @@ CREATE TABLE `user_field_values` (
       REFERENCES `profile_fields`(`id`) ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+-- ────────────────────────────────────────────────────────────
+-- TABLE: settings
+--   Key/value store for all admin-configurable options.
+-- ────────────────────────────────────────────────────────────
+CREATE TABLE `settings` (
+  `skey`       VARCHAR(100) NOT NULL,
+  `value`      TEXT         NOT NULL DEFAULT '',
+  `updated_at` DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP
+               ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`skey`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- ────────────────────────────────────────────────────────────
+-- TABLE: invitations
+--   Admin-issued signed registration links.
+-- ────────────────────────────────────────────────────────────
+CREATE TABLE `invitations` (
+  `id`         INT UNSIGNED NOT NULL AUTO_INCREMENT,
+  `email`      VARCHAR(150) NOT NULL,
+  `token`      VARCHAR(64)  NOT NULL,
+  `invited_by` INT UNSIGNED NOT NULL  COMMENT 'Admin user ID',
+  `used`       TINYINT(1)   NOT NULL DEFAULT 0,
+  `expires_at` DATETIME     NOT NULL,
+  `created_at` DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `uq_token` (`token`),
+  CONSTRAINT `fk_inv_admin` FOREIGN KEY (`invited_by`)
+      REFERENCES `users`(`id`) ON DELETE CASCADE ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
 SET FOREIGN_KEY_CHECKS = 1;
 
 -- ============================================================
@@ -115,97 +148,39 @@ INSERT INTO `profile_fields`
   ('github',    'GitHub',         'url',      'fab fa-github',         4),
   ('location',  'Location',       'text',     'fas fa-map-marker-alt', 5);
 
--- NOTE: The admin user is created by setup.php, not here.
--- Run setup.php in your browser immediately after importing this file.
-
--- ============================================================
--- Registration Controls
--- ============================================================
-
--- ── Settings table (key/value store for admin toggles) ───────
-CREATE TABLE IF NOT EXISTS `settings` (
-  `skey`       VARCHAR(100) NOT NULL,
-  `value`      TEXT         NOT NULL DEFAULT '',
-  `updated_at` DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP
-               ON UPDATE CURRENT_TIMESTAMP,
-  PRIMARY KEY (`skey`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
+-- Registration / general settings
 INSERT INTO `settings` (`skey`, `value`) VALUES
-  ('registration_open', '1')
-ON DUPLICATE KEY UPDATE `value` = VALUES(`value`);
+  ('registration_open', '1'),
 
--- ── Invitations table ────────────────────────────────────────
-CREATE TABLE IF NOT EXISTS `invitations` (
-  `id`         INT UNSIGNED NOT NULL AUTO_INCREMENT,
-  `email`      VARCHAR(150) NOT NULL,
-  `token`      VARCHAR(64)  NOT NULL,
-  `invited_by` INT UNSIGNED NOT NULL  COMMENT 'Admin user ID',
-  `used`       TINYINT(1)   NOT NULL DEFAULT 0,
-  `expires_at` DATETIME     NOT NULL,
-  `created_at` DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `uq_token` (`token`),
-  CONSTRAINT `fk_inv_admin` FOREIGN KEY (`invited_by`)
-      REFERENCES `users`(`id`) ON DELETE CASCADE ON UPDATE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
--- ============================================================
--- SMTP Settings
--- ============================================================
-
-INSERT INTO `settings` (`skey`, `value`) VALUES
+  -- SMTP settings
   ('smtp_host',       ''),
   ('smtp_port',       '587'),
   ('smtp_username',   ''),
   ('smtp_password',   ''),
   ('smtp_encryption', 'tls'),
   ('smtp_from_email', ''),
-  ('smtp_from_name',  '')
-ON DUPLICATE KEY UPDATE `value` = VALUES(`value`);
+  ('smtp_from_name',  ''),
 
--- ============================================================
--- Site Identity Settings
--- ============================================================
-
-INSERT INTO `settings` (`skey`, `value`) VALUES
+  -- Site identity
   ('site_name',        'Virtual Visiting Card'),
-  ('site_description', 'Create and share your digital visiting card.')
-ON DUPLICATE KEY UPDATE `value` = VALUES(`value`);
+  ('site_description', 'Create and share your digital visiting card.'),
 
--- ============================================================
--- Theme / Appearance Settings
--- ============================================================
+  -- Theme / appearance
+  ('theme_primary_color',    '#4f46e5'),
+  ('theme_accent_color',     '#7c3aed'),
+  ('theme_text_color',       '#374151'),
+  ('theme_heading_color',    '#0f172a'),
+  ('theme_bg_color',         '#f8fafc'),
+  ('theme_surface_color',    '#ffffff'),
+  ('theme_border_radius',    '12'),
+  ('theme_font_heading',     'Space Grotesk'),
+  ('theme_font_body',        'system-ui'),
+  ('theme_enable_animations','1'),
 
-INSERT INTO `settings` (`skey`, `value`) VALUES
-  ('theme_primary_color',   '#4f46e5'),
-  ('theme_accent_color',    '#7c3aed'),
-  ('theme_text_color',      '#374151'),
-  ('theme_heading_color',   '#0f172a'),
-  ('theme_bg_color',        '#f8fafc'),
-  ('theme_surface_color',   '#ffffff'),
-  ('theme_border_radius',   '12'),
-  ('theme_font_heading',    'Space Grotesk'),
-  ('theme_font_body',       'system-ui'),
-  ('theme_enable_animations','1')
-ON DUPLICATE KEY UPDATE `value` = VALUES(`value`);
-
--- ============================================================
--- SEO Controls (noindex/nofollow + robots.txt)
--- ============================================================
-
--- Per-page meta robots control
-ALTER TABLE `pages`
-  ADD COLUMN `meta_robots` VARCHAR(20) NOT NULL DEFAULT 'index,follow'
-  AFTER `nav_order`;
-
--- Per-profile meta robots control
-ALTER TABLE `users`
-  ADD COLUMN `meta_robots` VARCHAR(20) NOT NULL DEFAULT 'index,follow'
-  AFTER `can_edit_profile`;
-
--- Site-wide SEO settings
-INSERT INTO `settings` (`skey`, `value`) VALUES
+  -- SEO
   ('seo_global_noindex', '0'),
   ('robots_txt_custom',  '')
 ON DUPLICATE KEY UPDATE `value` = VALUES(`value`);
+
+-- NOTE: The admin user is created by setup.php, not here.
+-- Run setup.php in your browser immediately after importing this file.

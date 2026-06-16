@@ -62,29 +62,33 @@ A custom lightweight CMS and User Portal built with **PHP 8+**, **MySQL**, and *
 ### 1. Database
 
 ```sql
--- Import in order:
-SOURCE schema.sql;
-SOURCE migration_001_registration_controls.sql;
-SOURCE migration_002_smtp_settings.sql;
+SOURCE install.sql;
 ```
+
+This single file creates all tables, seed data, and default settings
+(registration, SMTP, theme, SEO, etc.).
 
 ### 2. Configuration
 
 ```bash
-cp config.php.example config.php   # or edit config.php directly
+cp config.php.example config.php
 ```
 
-Edit `config.php`:
+Edit `config.php` — only the database credentials need changing:
 
 ```php
-define('DB_HOST',  'localhost');
-define('DB_NAME',  'your_database');
-define('DB_USER',  'your_user');
-define('DB_PASS',  'your_password');
-define('BASE_URL', 'http://yourdomain.com/');  // trailing slash required
+define('DB_HOST', 'localhost');
+define('DB_NAME', 'your_database');
+define('DB_USER', 'your_user');
+define('DB_PASS', 'your_password');
 ```
 
+`BASE_URL` is auto-detected from the server environment — no manual
+configuration needed, works for root or subfolder installs.
+
 > **Note:** `config.php` is in `.gitignore` — never commit credentials.
+> All other app constants live in `app-defaults.php` (versioned,
+> updates automatically — you never need to edit it).
 
 ### 3. Admin Account
 
@@ -112,7 +116,7 @@ Then configure SMTP in **Admin → Settings → SMTP**.
 **Nginx** — add to your server block:
 ```nginx
 location / {
-    try_files $uri $uri/ /index.php?url=$uri&$args;
+    try_files $uri $uri/ /index.php?$args;
 }
 ```
 
@@ -123,13 +127,12 @@ location / {
 ```
 /
 ├── index.php                  # Front controller / router
-├── config.php                 # DB credentials + app constants (gitignored)
-├── helpers.php                # Shared functions (session, CSRF, flash, upload)
+├── config.php                 # DB credentials + BASE_URL (gitignored, edit once)
+├── app-defaults.php           # All other app constants (versioned, auto-updates)
+├── helpers.php                # Shared functions (session, CSRF, flash, upload, SEO, theme)
 ├── db.php                     # PDO singleton
 ├── mailer.php                 # PHPMailer wrapper
-├── schema.sql                 # Initial DB schema + seed data
-├── migration_001_*.sql        # Registration controls + invitations tables
-├── migration_002_*.sql        # SMTP settings keys
+├── install.sql                # Complete DB schema + seed data (single file)
 ├── setup.php                  # One-time admin account creator (delete after use)
 │
 ├── login.php / logout.php / register.php
