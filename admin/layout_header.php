@@ -88,14 +88,18 @@ if ($_theme['font_heading'] !== 'Space Grotesk' && $_theme['font_heading'] !== '
                 <i class="fas fa-external-link-alt me-1"></i>
                 <span class="d-none d-md-inline">View Site</span>
             </a>
-            <div class="dropdown">
+            <div class="dropdown" style="position:relative;">
                 <button class="btn btn-sm btn-link text-white d-flex align-items-center gap-2 text-decoration-none"
                         type="button" id="adminUserDrop">
                     <i class="fas fa-user-circle fa-lg"></i>
                     <span class="d-none d-md-inline"><?= e($_adminUser) ?></span>
-                    <i class="fas fa-chevron-down fa-xs"></i>
+                    <i class="fas fa-chevron-down fa-xs ms-1"></i>
                 </button>
-                <ul class="dropdown-menu dropdown-menu-end shadow border-0" id="adminUserMenu">
+                <ul class="admin-user-menu shadow border-0" id="adminUserMenu">
+                    <li class="px-3 py-2 border-bottom">
+                        <div class="fw-semibold small"><?= e($_adminUser) ?></div>
+                        <div class="text-muted" style="font-size:.75rem;">Administrator</div>
+                    </li>
                     <li>
                         <a class="dropdown-item" href="<?= BASE_URL . e($_adminUser) ?>">
                             <i class="fas fa-id-card me-2 text-muted"></i>My Profile
@@ -111,13 +115,13 @@ if ($_theme['font_heading'] !== 'Space Grotesk' && $_theme['font_heading'] !== '
                             <i class="fas fa-lock me-2 text-muted"></i>Change Password
                         </a>
                     </li>
-                    <li><hr class="dropdown-divider"></li>
+                    <li><hr class="dropdown-divider my-1"></li>
                     <li>
                         <a class="dropdown-item" href="<?= BASE_URL ?>" target="_blank">
                             <i class="fas fa-external-link-alt me-2 text-muted"></i>View Site
                         </a>
                     </li>
-                    <li><hr class="dropdown-divider"></li>
+                    <li><hr class="dropdown-divider my-1"></li>
                     <li>
                         <a class="dropdown-item text-danger fw-semibold" href="<?= BASE_URL ?>logout">
                             <i class="fas fa-sign-out-alt me-2"></i>Sign Out
@@ -155,9 +159,6 @@ if ($_theme['font_heading'] !== 'Space Grotesk' && $_theme['font_heading'] !== '
             <div class="admin-nav-section-label">System</div>
             <ul class="nav flex-column">
                 <?= _adminNavLink(BASE_URL . 'admin/settings/', 'fas fa-sliders-h', 'Settings', 'settings', $activeNav) ?>
-                <?php if (!file_exists(dirname(__DIR__) . '/vendor/phpmailer/phpmailer/src/PHPMailer.php')): ?>
-                <?= _adminNavLink(BASE_URL . 'install_phpmailer.php', 'fas fa-envelope-open-text', 'Install Mailer', 'mailer', $activeNav) ?>
-                <?php endif; ?>
             </ul>
         </nav>
     </aside>

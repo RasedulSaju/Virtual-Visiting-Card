@@ -4,6 +4,8 @@
 # Uploads (user content — never commit)
 /uploads/profiles/*
 !/uploads/profiles/.gitkeep
+/uploads/pages/*
+!/uploads/pages/.gitkeep
 
 # Environment / secrets
 config.php

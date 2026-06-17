@@ -101,10 +101,50 @@ require_once __DIR__ . '/../layout_header.php';
                         </div>
                     </div>
                     <div class="mb-3">
-                        <label class="form-label fw-semibold" for="content">Content (HTML allowed)</label>
+                        <label class="form-label fw-semibold d-flex align-items-center justify-content-between" for="content">
+                            <span>Content <small class="fw-normal text-muted">(HTML supported)</small></span>
+                            <span class="d-flex gap-1">
+                                <button type="button" class="btn btn-sm btn-outline-secondary insert-btn" data-tag="<strong>|</strong>" title="Bold">
+                                    <i class="fas fa-bold"></i>
+                                </button>
+                                <button type="button" class="btn btn-sm btn-outline-secondary insert-btn" data-tag="<em>|</em>" title="Italic">
+                                    <i class="fas fa-italic"></i>
+                                </button>
+                                <button type="button" class="btn btn-sm btn-outline-secondary insert-btn" data-tag="<a href=&quot;&quot;>|</a>" title="Link">
+                                    <i class="fas fa-link"></i>
+                                </button>
+                                <button type="button" class="btn btn-sm btn-outline-secondary insert-btn" data-tag="<h3>|</h3>" title="Heading">
+                                    <i class="fas fa-heading"></i>
+                                </button>
+                                <button type="button" class="btn btn-sm btn-outline-secondary insert-btn" data-tag="<ul>&#10;  <li>|</li>&#10;</ul>" title="List">
+                                    <i class="fas fa-list"></i>
+                                </button>
+                                <button type="button" class="btn btn-sm btn-outline-primary" id="uploadImageBtn" title="Upload & Insert Image">
+                                    <i class="fas fa-image me-1"></i>Image
+                                </button>
+                            </span>
+                        </label>
+
+                        <!-- Image upload panel -->
+                        <div id="imageUploadPanel" class="card border mb-2 p-3 d-none">
+                            <div class="d-flex align-items-center gap-2 flex-wrap">
+                                <input type="file" id="pageImageFile" accept="image/jpeg,image/png,image/gif"
+                                       class="form-control form-control-sm" style="max-width:260px;">
+                                <button type="button" class="btn btn-sm btn-primary" id="doUploadImage">
+                                    <i class="fas fa-upload me-1"></i>Upload &amp; Insert
+                                </button>
+                                <button type="button" class="btn btn-sm btn-outline-secondary" id="closeImagePanel">
+                                    <i class="fas fa-times"></i>
+                                </button>
+                                <span id="uploadStatus" class="small text-muted"></span>
+                            </div>
+                            <!-- Previously uploaded images -->
+                            <div id="uploadedImagesList" class="d-flex flex-wrap gap-2 mt-2"></div>
+                        </div>
+
                         <textarea id="content" name="content" class="form-control font-monospace"
                                   rows="16" style="font-size:.85rem;"><?= e($old['content']) ?></textarea>
-                        <div class="form-text">You can write plain HTML. This content is rendered on the public page.</div>
+                        <div class="form-text">Write HTML directly. Use the toolbar buttons for quick inserts.</div>
                     </div>
                 </div>
             </div>
@@ -180,6 +220,89 @@ require_once __DIR__ . '/../layout_header.php';
         slugEl.dataset.manual = '1';
         slugEl.value = toSlug(slugEl.value);
         previewEl.textContent = base + slugEl.value;
+    });
+})();
+</script>
+
+<script>
+// ── Page editor toolbar ───────────────────────────────────────
+(function () {
+    const ta = document.getElementById('content');
+
+    // Insert tag around selection
+    document.querySelectorAll('.insert-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const tag   = btn.dataset.tag.replace('&quot;', '"');
+            const parts = tag.split('|');
+            const start = ta.selectionStart;
+            const end   = ta.selectionEnd;
+            const sel   = ta.value.substring(start, end);
+            const before = parts[0] || '';
+            const after  = parts[1] || '';
+            ta.value = ta.value.substring(0, start) + before + sel + after + ta.value.substring(end);
+            ta.focus();
+            ta.setSelectionRange(start + before.length, start + before.length + sel.length);
+        });
+    });
+
+    // Image upload panel toggle
+    const panel     = document.getElementById('imageUploadPanel');
+    const uploadBtn = document.getElementById('uploadImageBtn');
+    const closeBtn  = document.getElementById('closeImagePanel');
+    const doUpload  = document.getElementById('doUploadImage');
+    const fileInput = document.getElementById('pageImageFile');
+    const status    = document.getElementById('uploadStatus');
+    const imgList   = document.getElementById('uploadedImagesList');
+
+    uploadBtn.addEventListener('click', () => panel.classList.toggle('d-none'));
+    closeBtn.addEventListener('click',  () => panel.classList.add('d-none'));
+
+    function insertImageTag(url) {
+        const tag = `<img src="${url}" alt="" style="max-width:100%;height:auto;border-radius:6px;">`;
+        const pos = ta.selectionStart;
+        ta.value  = ta.value.substring(0, pos) + tag + ta.value.substring(pos);
+        ta.focus();
+        ta.setSelectionRange(pos + tag.length, pos + tag.length);
+    }
+
+    function addThumb(url) {
+        const img = document.createElement('img');
+        img.src   = url;
+        img.title = 'Click to insert';
+        img.style.cssText = 'width:64px;height:64px;object-fit:cover;border-radius:6px;cursor:pointer;border:2px solid #e2e8f0;';
+        img.addEventListener('click', () => insertImageTag(url));
+        imgList.appendChild(img);
+    }
+
+    doUpload.addEventListener('click', async () => {
+        const file = fileInput.files[0];
+        if (!file) { status.textContent = 'Please select a file.'; return; }
+
+        status.textContent = 'Uploading…';
+        doUpload.disabled  = true;
+
+        const fd = new FormData();
+        fd.append('image', file);
+
+        try {
+            const resp = await fetch('<?= BASE_URL ?>admin/media/upload.php', {
+                method: 'POST', body: fd
+            });
+            const data = await resp.json();
+
+            if (data.error) {
+                status.textContent = '✗ ' + data.error;
+            } else {
+                insertImageTag(data.url);
+                addThumb(data.url);
+                status.textContent = '✓ Inserted (' + data.size + ')';
+                fileInput.value = '';
+            }
+        } catch (e) {
+            status.textContent = '✗ Upload failed.';
+        } finally {
+            doUpload.disabled = false;
+        }
     });
 })();
 </script>

@@ -60,3 +60,16 @@ if (!defined('DEFAULT_AVATAR')) {
 if (!is_dir(UPLOAD_DIR)) {
     @mkdir(UPLOAD_DIR, 0755, true);
 }
+
+// ── Page Media Uploads ────────────────────────────────────────
+if (!defined('UPLOAD_DIR_PAGES')) {
+    define('UPLOAD_DIR_PAGES', rtrim(str_replace('\\', '/', __DIR__), '/') . '/uploads/pages/');
+}
+if (!defined('UPLOAD_URL_PAGES')) {
+    define('UPLOAD_URL_PAGES', BASE_URL . 'uploads/pages/');
+}
+
+// Auto-create page uploads directory if missing
+if (!is_dir(UPLOAD_DIR_PAGES)) {
+    @mkdir(UPLOAD_DIR_PAGES, 0755, true);
+}

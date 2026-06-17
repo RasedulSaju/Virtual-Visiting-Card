@@ -225,9 +225,42 @@
     box-shadow: 0 0 0 .2rem rgba(79,70,229,.15);
 }
 
-/* ── Buttons ─────────────────────────────────────────────────── */
-.admin-body .btn { border-radius: 8px; font-weight: 600; font-size: .875rem; }
-.admin-body .btn-sm { font-size: .8rem; }
+/* ── Admin user dropdown ─────────────────────────────────────── */
+.admin-user-menu {
+    display: none;
+    position: absolute;
+    right: 0;
+    left: auto;
+    top: calc(100% + 6px);
+    z-index: 9999;          /* must be > topbar z-index (1040) */
+    min-width: 220px;
+    background: #fff;
+    border-radius: 10px;
+    padding: .4rem 0;
+    box-shadow: 0 8px 32px rgba(15, 23, 42, .18) !important;
+    white-space: nowrap;
+    list-style: none;
+    margin: 0;
+}
+
+.admin-user-menu.show { display: block; }
+
+.admin-user-menu .dropdown-item {
+    padding: .5rem 1rem;
+    font-size: .875rem;
+    color: #374151;
+    display: flex;
+    align-items: center;
+    white-space: nowrap;
+    transition: background .12s;
+}
+
+.admin-user-menu .dropdown-item:hover  { background: #f8fafc; }
+.admin-user-menu .dropdown-item.text-danger:hover { background: #fef2f2; }
+.admin-user-menu .dropdown-divider {
+    border-color: #e2e8f0;
+    margin: .3rem 0;
+}
 
 /* ── Drag handle ─────────────────────────────────────────────── */
 .drag-handle:hover { color: #4f46e5 !important; }
@@ -252,3 +285,8 @@
     .admin-content-inner { padding: 1rem; }
     .admin-page-title { font-size: 1.2rem; }
 }
+
+
+/* ── Buttons ─────────────────────────────────────────────────── */
+.admin-body .btn { border-radius: 8px; font-weight: 600; font-size: .875rem; }
+.admin-body .btn-sm { font-size: .8rem; }

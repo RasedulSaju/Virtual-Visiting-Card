@@ -271,18 +271,6 @@ require_once __DIR__ . '/../layout_header.php';
 
 <?php elseif ($activeTab === 'smtp'): ?>
 <!-- ── SMTP ──────────────────────────────────────────────────── -->
-<?php if (!file_exists(dirname(__DIR__, 1) . '/vendor/phpmailer/phpmailer/src/PHPMailer.php')): ?>
-<div class="alert alert-warning d-flex align-items-center gap-3 mb-4">
-    <i class="fas fa-exclamation-triangle fa-2x flex-shrink-0"></i>
-    <div>
-        <strong>PHPMailer is not installed.</strong>
-        SMTP settings will be saved but emails won't send until PHPMailer is installed.
-        <a href="<?= BASE_URL ?>install_phpmailer.php" class="btn btn-sm btn-warning ms-2">
-            <i class="fas fa-download me-1"></i>Install Now (no SSH needed)
-        </a>
-    </div>
-</div>
-<?php endif; ?>
 <div class="row g-4">
     <div class="col-lg-7">
         <form method="POST">
@@ -388,11 +376,9 @@ require_once __DIR__ . '/../layout_header.php';
 
     <div class="col-lg-5">
         <div class="card border-0 shadow-sm mb-3">
-            <div class="card-header fw-semibold"><i class="fas fa-info-circle me-2 text-info"></i>Setup Guide</div>
+            <div class="card-header fw-semibold"><i class="fas fa-info-circle me-2 text-info"></i>SMTP Providers</div>
             <div class="card-body p-4 small text-muted">
-                <p class="fw-semibold text-dark mb-2">1. Install PHPMailer</p>
-                <pre class="bg-light rounded p-2 small">composer require phpmailer/phpmailer</pre>
-                <p class="fw-semibold text-dark mb-2 mt-3">2. Common providers</p>
+                <p class="fw-semibold text-dark mb-2">Common providers</p>
                 <table class="table table-sm table-bordered small">
                     <thead class="table-light"><tr><th>Provider</th><th>Host</th><th>Port</th></tr></thead>
                     <tbody>
@@ -403,12 +389,15 @@ require_once __DIR__ . '/../layout_header.php';
                         <tr><td>Brevo</td><td>smtp-relay.brevo.com</td><td>587</td></tr>
                     </tbody>
                 </table>
-                <p class="fw-semibold text-dark mb-1 mt-2">3. What uses email</p>
-                <ul class="ps-3 mb-0">
+                <p class="fw-semibold text-dark mb-1 mt-3">Used for</p>
+                <ul class="ps-3 mb-2">
                     <li>Password reset links</li>
                     <li>User invitations</li>
                 </ul>
-                <p class="mt-2 mb-0">When SMTP is <strong>not configured</strong>, links are shown on-screen (dev mode).</p>
+                <div class="alert alert-info py-2 mb-0 small">
+                    <i class="fas fa-info-circle me-1"></i>
+                    When SMTP is not configured, links are shown on-screen (dev mode).
+                </div>
             </div>
         </div>
     </div>
