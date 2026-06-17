@@ -15,7 +15,7 @@ declare(strict_types=1);
 
 // ── Database ─────────────────────────────────────────────────
 define('DB_HOST',    'localhost');
-define('DB_NAME',    'vvcard_db');       // ← your database name
+define('DB_NAME',    'cms_db');       // ← your database name
 define('DB_USER',    'root');         // ← your database user
 define('DB_PASS',    '');             // ← your database password
 define('DB_CHARSET', 'utf8mb4');

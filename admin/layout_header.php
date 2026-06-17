@@ -155,6 +155,9 @@ if ($_theme['font_heading'] !== 'Space Grotesk' && $_theme['font_heading'] !== '
             <div class="admin-nav-section-label">System</div>
             <ul class="nav flex-column">
                 <?= _adminNavLink(BASE_URL . 'admin/settings/', 'fas fa-sliders-h', 'Settings', 'settings', $activeNav) ?>
+                <?php if (!file_exists(dirname(__DIR__) . '/vendor/phpmailer/phpmailer/src/PHPMailer.php')): ?>
+                <?= _adminNavLink(BASE_URL . 'install_phpmailer.php', 'fas fa-envelope-open-text', 'Install Mailer', 'mailer', $activeNav) ?>
+                <?php endif; ?>
             </ul>
         </nav>
     </aside>

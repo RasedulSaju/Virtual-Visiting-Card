@@ -271,6 +271,18 @@ require_once __DIR__ . '/../layout_header.php';
 
 <?php elseif ($activeTab === 'smtp'): ?>
 <!-- ── SMTP ──────────────────────────────────────────────────── -->
+<?php if (!file_exists(dirname(__DIR__, 1) . '/vendor/phpmailer/phpmailer/src/PHPMailer.php')): ?>
+<div class="alert alert-warning d-flex align-items-center gap-3 mb-4">
+    <i class="fas fa-exclamation-triangle fa-2x flex-shrink-0"></i>
+    <div>
+        <strong>PHPMailer is not installed.</strong>
+        SMTP settings will be saved but emails won't send until PHPMailer is installed.
+        <a href="<?= BASE_URL ?>install_phpmailer.php" class="btn btn-sm btn-warning ms-2">
+            <i class="fas fa-download me-1"></i>Install Now (no SSH needed)
+        </a>
+    </div>
+</div>
+<?php endif; ?>
 <div class="row g-4">
     <div class="col-lg-7">
         <form method="POST">

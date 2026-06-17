@@ -1,189 +1,115 @@
 # Virtual Visiting Card
 
-A custom lightweight CMS and User Portal built with **PHP 8+**, **MySQL**, and **MDB5 (Material Design Bootstrap)**.
+> A custom lightweight CMS and User Portal — PHP 8+, MySQL, MDB5 (Material Design Bootstrap).
+
+---
+
+## Documentation
+
+| Guide | Description |
+|---|---|
+| [Installation](docs/installation.md) | cPanel, XAMPP, Linux VPS step-by-step |
+| [Configuration](docs/configuration.md) | config.php, app-defaults.php, all admin settings |
+| [Admin Panel Guide](docs/admin-guide.md) | Every admin section explained |
+| [User Guide](docs/user-guide.md) | Registration, profiles, password reset |
+| [Developer Guide](docs/developer.md) | Architecture, file structure, helpers reference |
+| [Troubleshooting](docs/troubleshooting.md) | Common errors and fixes |
+
+---
+
+## Quick Install (3 steps)
+
+```
+1. Import install.sql into your MySQL database
+2. Edit config.php — enter your DB credentials (4 lines)
+3. Visit /setup.php → create admin → delete setup.php
+```
+
+---
 
 ## Features
 
-### Public
-- Clean URL routing — `domain/username` → user profile, `domain/about-us` → CMS page
-- User registration (open/invite-only/closed)
-- Password reset via secure token (email or dev-mode link)
-- Public members directory (`/members`)
-- Auto-generated XML sitemap (`/sitemap.xml`)
-- Open Graph + Twitter card meta tags on all pages
-
-### User
-- Profile page with avatar, bio, and custom fields
-- Self-managed profile editing (controlled per-user by admin)
-- Custom profile fields (text, URL, textarea) defined by admin
-
-### Admin Panel (`/admin`)
-- Dashboard with stats and quick actions
-- Full CRUD for users (create, edit, delete, bulk actions)
-- Full CRUD for pages (slug, content, nav visibility)
-- Profile fields builder (icon picker, field type, sort order)
-- Navigation menu builder (drag-to-reorder, live preview)
-- Invitation system (48hr signed tokens, bypass registration gate)
-- Settings: registration toggle, SMTP email, analytics integrations
-
-### Analytics (Admin > Settings > Analytics)
-- Google Analytics 4
-- Google Tag Manager
-- Microsoft Clarity
-- Meta (Facebook) Pixel
-- Hotjar
-- Plausible Analytics
-- Custom `<head>` / `<body>` code injection
-
-### Email (Admin > Settings > SMTP)
-- PHPMailer integration with any SMTP provider
-- Password reset emails
-- Invitation emails
-- Test-send from admin panel
-- Falls back to dev-mode link display when unconfigured
+| Area | Details |
+|---|---|
+| **Routing** | Clean URLs — `domain/username` → profile · `domain/slug` → page · auto 404 |
+| **Auth** | Login, register, forgot/reset/change password, invite-only registration |
+| **Profiles** | Avatar upload, bio, admin-defined custom fields (text/url/textarea) |
+| **Admin Panel** | Full CRUD — users, pages, profile fields, navigation builder |
+| **Registration Control** | Open / closed / invite-only · 48-hour signed invite links |
+| **Email** | PHPMailer SMTP — password resets + invitations · browser installer for cPanel |
+| **Appearance** | Live color pickers, Google Fonts, border radius slider, animation toggle |
+| **Analytics** | GA4, GTM, Clarity, Meta Pixel, Hotjar, Plausible, custom code injection |
+| **SEO** | Per-page/profile noindex+nofollow · editable robots.txt · dynamic sitemap.xml |
+| **Dynamic** | BASE_URL auto-detected · site name/description editable from admin · zero hardcoded values |
+| **Security** | PDO prepared statements · CSRF · bcrypt cost-12 · finfo upload validation · session hardening |
 
 ---
 
-## Stack
+## Tech Stack
 
 | Layer | Technology |
 |---|---|
-| Backend | PHP 8+ |
-| Database | MySQL 5.7+ / MariaDB 10+ |
+| Backend | PHP 8.0+ |
+| Database | MySQL 5.7+ / MariaDB 10.3+ |
 | Frontend | MDB5 (Material Design Bootstrap) via CDN |
 | Icons | Font Awesome 6 |
 | Typography | Space Grotesk (Google Fonts) |
-| Email | PHPMailer (optional) |
+| Email | PHPMailer 6.x (optional) |
 
 ---
 
-## Installation
+## File Structure
 
-### 1. Database
-
-```sql
-SOURCE install.sql;
+```
+vvcard/
+├── index.php              # Front controller / 4-tier URL router
+├── config.php             # DB credentials + auto-detected BASE_URL (gitignored)
+├── app-defaults.php       # Versioned app constants (auto-updates with project)
+├── helpers.php            # All shared functions
+├── db.php                 # PDO singleton
+├── mailer.php             # PHPMailer SMTP wrapper
+├── install.sql            # Complete DB schema + all seed data
+├── setup.php              # One-time admin account creator (delete after use)
+├── install_phpmailer.php  # Browser-based PHPMailer installer (delete after use)
+├── install.sh             # Linux/SSH PHPMailer installer
+├── install.bat            # Windows PHPMailer installer
+│
+├── templates/             # Public page templates
+├── admin/                 # Admin panel (auth-protected)
+├── assets/                # CSS, JS, images
+├── uploads/profiles/      # User avatars (gitignored)
+└── docs/                  # Documentation
 ```
 
-This single file creates all tables, seed data, and default settings
-(registration, SMTP, theme, SEO, etc.).
+---
 
-### 2. Configuration
+## Configuration
 
-```bash
-cp config.php.example config.php
-```
-
-Edit `config.php` — only the database credentials need changing:
-
+`config.php` — the only file you ever need to edit:
 ```php
 define('DB_HOST', 'localhost');
 define('DB_NAME', 'your_database');
 define('DB_USER', 'your_user');
 define('DB_PASS', 'your_password');
+// BASE_URL is auto-detected — no manual config needed
 ```
 
-`BASE_URL` is auto-detected from the server environment — no manual
-configuration needed, works for root or subfolder installs.
-
-> **Note:** `config.php` is in `.gitignore` — never commit credentials.
-> All other app constants live in `app-defaults.php` (versioned,
-> updates automatically — you never need to edit it).
-
-### 3. Admin Account
-
-Visit `http://yourdomain.com/setup.php` in your browser.  
-**Delete `setup.php` immediately after creating your admin account.**
-
-### 4. Directory Permissions
-
-```bash
-chmod 755 uploads/profiles
-```
-
-### 5. Email (Optional)
-
-```bash
-composer require phpmailer/phpmailer
-```
-
-Then configure SMTP in **Admin → Settings → SMTP**.
-
-### 6. Web Server
-
-**Apache** — `.htaccess` is included. Ensure `mod_rewrite` is enabled.
-
-**Nginx** — add to your server block:
-```nginx
-location / {
-    try_files $uri $uri/ /index.php?$args;
-}
-```
-
----
-
-## Project Structure
-
-```
-/
-├── index.php                  # Front controller / router
-├── config.php                 # DB credentials + BASE_URL (gitignored, edit once)
-├── app-defaults.php           # All other app constants (versioned, auto-updates)
-├── helpers.php                # Shared functions (session, CSRF, flash, upload, SEO, theme)
-├── db.php                     # PDO singleton
-├── mailer.php                 # PHPMailer wrapper
-├── install.sql                # Complete DB schema + seed data (single file)
-├── setup.php                  # One-time admin account creator (delete after use)
-│
-├── login.php / logout.php / register.php
-├── forgot_password.php / reset_password.php
-├── edit_profile.php           # User self-edit (bio, image, custom fields)
-├── members.php                # Public members directory
-├── sitemap.php                # Auto-generated sitemap.xml
-│
-├── templates/
-│   ├── layout_header.php      # Global nav + analytics injection + OG tags
-│   ├── layout_footer.php      # Footer + MDB5 JS
-│   ├── page.php               # CMS page renderer
-│   ├── profile.php            # User profile card + fields
-│   └── 404.php
-│
-├── admin/
-│   ├── auth_check.php         # Admin guard
-│   ├── layout_header.php      # Dark sidebar layout
-│   ├── layout_footer.php
-│   ├── index.php              # Dashboard
-│   ├── users/                 # CRUD + bulk actions
-│   ├── pages/                 # CRUD
-│   ├── fields/                # Profile field builder
-│   ├── nav/                   # Navigation menu manager
-│   ├── invitations/           # Invite system
-│   └── settings/              # General, SMTP, Analytics tabs
-│
-├── assets/
-│   ├── css/custom.css         # Public design system
-│   ├── css/admin.css          # Admin panel styles
-│   ├── js/custom.js           # Shared JS utilities
-│   └── img/default-avatar.svg
-│
-└── uploads/
-    └── profiles/              # User-uploaded images (gitignored)
-```
+All other constants live in `app-defaults.php` (tracked by git, never needs editing).
 
 ---
 
 ## Security
 
-- PDO prepared statements — no SQL injection
-- `htmlspecialchars()` on all user output — no XSS
+- PDO prepared statements with emulation off — no SQL injection
+- `htmlspecialchars()` on all user output — no XSS  
 - CSRF tokens on all POST forms
-- Bcrypt (cost 12) password hashing
-- `finfo` MIME + extension validation on uploads
+- bcrypt cost-12 password hashing
+- `finfo` MIME + extension validation on file uploads
 - Filenames fully sanitized on upload (`user_ID_timestamp.ext`)
 - Session regeneration on login
 - `httponly` + `samesite=Lax` session cookies
 - Admin self-delete protected
-- `.htaccess` blocks direct access to `.sql`, `.env`, `config.php`, `db.php`
+- `.htaccess` blocks direct access to config, helper, and SQL files
 
 ---
 
