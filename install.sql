@@ -138,10 +138,12 @@ SET FOREIGN_KEY_CHECKS = 1;
 -- SEED DATA
 -- ============================================================
 
--- Sample page (visible in navigation)
+
+-- Initial Users
 INSERT INTO `users` (`id`, `username`, `email`, `password_hash`, `role`, `account_status`, `can_edit_profile`, `meta_robots`, `show_in_directory`, `profile_image`, `bio`, `reset_token`, `reset_expires`, `created_at`) VALUES
-(1, 'superadmin', 'me@rasedulsaju.com', '$2y$12$OKeshbWcTGY6yZFCg5k6e.o7uWDq11FpSzrseEuUv7B86Vvj6/0Hu', 'superadmin', 'active', 1, 'noindex,nofollow', 0, 'default-avatar.png', NULL, NULL, NULL, '2026-06-20 15:45:00'),
-(2, 'admin', 'rasedulsaju@gmail.com', '$2y$12$OKeshbWcTGY6yZFCg5k6e.o7uWDq11FpSzrseEuUv7B86Vvj6/0Hu', 'admin', 'active', 1, 'noindex,nofollow', 0, 'default-avatar.png', NULL, NULL, NULL, '2026-06-20 15:50:00');
+(1, 'Rasedul', 'me@rasedulsaju.com', '$2y$12$cBKitkQLdmQHKmySesqoBOGv74gXVFbZM4Capmp2ozGCfQ8HMc9RO', 'superadmin', 'active', 1, 'index,follow', 1, 'default-avatar.png', NULL, NULL, NULL, '2026-06-20 18:25:00'),
+(2, 'RasedulSaju', 'rasedulsaju@gmail.com', '$2y$12$cBKitkQLdmQHKmySesqoBOGv74gXVFbZM4Capmp2ozGCfQ8HMc9RO', 'admin', 'active', 1, 'index,follow', 1, 'default-avatar.png', NULL, NULL, NULL, '2026-06-20 18:25:08');
+
 
 -- Sample page (visible in navigation)
 INSERT INTO `pages` (`slug`, `title`, `content`, `show_in_nav`, `nav_order`) VALUES

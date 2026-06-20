@@ -174,27 +174,27 @@ if (!empty($_a_cBody)): echo $_a_cBody; endif; ?>
                     <?php endif; ?>
 
                     <!-- Desktop dropdown -->
-                    <li class="nav-item dropdown d-none d-lg-block">
-                        <a class="nav-link dropdown-toggle d-flex align-items-center gap-2"
+                    <li class="nav-item cms-user-wrap d-none d-lg-block">
+                        <a class="nav-link cms-user-toggle d-flex align-items-center gap-2"
                            href="#" id="userDropDesktop" role="button">
                             <img src="<?= avatarUrl($_activeUser['profile_image']) ?>"
                                  class="rounded-circle cms-nav-avatar" width="32" height="32"
                                  style="object-fit:cover;" alt="">
                             <span><?= e($_activeUser['username']) ?></span>
                         </a>
-                        <ul class="dropdown-menu dropdown-menu-end shadow border-0" id="userDropMenu">
+                        <ul class="cms-user-menu shadow border-0" id="userDropMenu">
                             <li class="px-3 py-1">
                                 <small class="text-muted">Signed in as <strong><?= e($_activeUser['username']) ?></strong></small>
                             </li>
-                            <li><hr class="dropdown-divider my-1"></li>
-                            <li><a class="dropdown-item" href="<?= BASE_URL . e($_activeUser['username']) ?>">
+                            <li><hr class="cms-menu-divider my-1"></li>
+                            <li><a class="cms-menu-item" href="<?= BASE_URL . e($_activeUser['username']) ?>">
                                 <i class="fas fa-id-card me-2 text-muted"></i>My Profile</a></li>
-                            <li><a class="dropdown-item" href="<?= BASE_URL ?>edit-profile">
+                            <li><a class="cms-menu-item" href="<?= BASE_URL ?>edit-profile">
                                 <i class="fas fa-pen me-2 text-muted"></i>Edit Profile</a></li>
-                            <li><a class="dropdown-item" href="<?= BASE_URL ?>change-password">
+                            <li><a class="cms-menu-item" href="<?= BASE_URL ?>change-password">
                                 <i class="fas fa-lock me-2 text-muted"></i>Change Password</a></li>
-                            <li><hr class="dropdown-divider my-1"></li>
-                            <li><a class="dropdown-item text-danger" href="<?= BASE_URL ?>logout">
+                            <li><hr class="cms-menu-divider my-1"></li>
+                            <li><a class="cms-menu-item cms-menu-item--danger" href="<?= BASE_URL ?>logout">
                                 <i class="fas fa-sign-out-alt me-2"></i>Sign Out</a></li>
                         </ul>
                     </li>

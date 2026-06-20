@@ -155,14 +155,14 @@ $activeNav = 'settings';
 require_once __DIR__ . '/../layout_header.php';
 ?>
 
-<ul class="nav nav-tabs mb-4">
+<ul class="settings-tabs mb-4">
     <li class="nav-item">
-        <a class="nav-link <?= $activeTab === 'general'   ? 'active' : '' ?>" href="?tab=general">
+        <a class="settings-tab <?= $activeTab === 'general'   ? 'active' : '' ?>" href="?tab=general">
             <i class="fas fa-sliders-h me-1"></i>General
         </a>
     </li>
     <li class="nav-item">
-        <a class="nav-link <?= $activeTab === 'smtp'      ? 'active' : '' ?>" href="?tab=smtp">
+        <a class="settings-tab <?= $activeTab === 'smtp'      ? 'active' : '' ?>" href="?tab=smtp">
             <i class="fas fa-envelope me-1"></i>SMTP / Email
             <?php if ($smtpConfigured): ?>
                 <span class="badge bg-success ms-1">On</span>
@@ -170,12 +170,12 @@ require_once __DIR__ . '/../layout_header.php';
         </a>
     </li>
     <li class="nav-item">
-        <a class="nav-link <?= $activeTab === 'appearance' ? 'active' : '' ?>" href="?tab=appearance">
+        <a class="settings-tab <?= $activeTab === 'appearance' ? 'active' : '' ?>" href="?tab=appearance">
             <i class="fas fa-palette me-1"></i>Appearance
         </a>
     </li>
     <li class="nav-item">
-        <a class="nav-link <?= $activeTab === 'seo' ? 'active' : '' ?>" href="?tab=seo">
+        <a class="settings-tab <?= $activeTab === 'seo' ? 'active' : '' ?>" href="?tab=seo">
             <i class="fas fa-search me-1"></i>SEO
             <?php if ($seoGlobalNoindex): ?>
                 <span class="badge bg-danger ms-1">Hidden</span>
@@ -183,7 +183,7 @@ require_once __DIR__ . '/../layout_header.php';
         </a>
     </li>
     <li class="nav-item">
-        <a class="nav-link <?= $activeTab === 'analytics' ? 'active' : '' ?>" href="?tab=analytics">
+        <a class="settings-tab <?= $activeTab === 'analytics' ? 'active' : '' ?>" href="?tab=analytics">
             <i class="fas fa-chart-line me-1"></i>Analytics
             <?php $ac = count(array_filter(array_slice($analytics,0,6),'strlen')); ?>
             <?php if ($ac): ?><span class="badge bg-success ms-1"><?= $ac ?></span><?php endif; ?>
@@ -798,8 +798,10 @@ function updateThemePreview() {
 <?php endif; ?>
 
 <style>
-.nav-tabs .nav-link { border-radius: 8px 8px 0 0; font-weight: 500; }
-.nav-tabs .nav-link.active { color: #4f46e5; }
+.settings-tabs { display:flex; list-style:none; padding:0; margin:0; border-bottom:1px solid #e2e8f0; gap:.25rem; }
+.settings-tab { display:inline-block; padding:.6rem 1rem; border-radius:8px 8px 0 0; font-weight:500; font-size:.9rem; color:#6b7280; text-decoration:none; border:1px solid transparent; border-bottom:none; }
+.settings-tab:hover { color:#374151; text-decoration:none; background:#f8fafc; }
+.settings-tab.active { color:#4f46e5; background:#fff; border-color:#e2e8f0; border-bottom-color:#fff; margin-bottom:-1px; }
 </style>
 
 <?php require_once __DIR__ . '/../layout_footer.php'; ?>

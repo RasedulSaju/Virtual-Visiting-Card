@@ -88,7 +88,7 @@ if ($_theme['font_heading'] !== 'Space Grotesk' && $_theme['font_heading'] !== '
                 <i class="fas fa-external-link-alt me-1"></i>
                 <span class="d-none d-md-inline">View Site</span>
             </a>
-            <div class="dropdown" style="position:relative;">
+            <div class="adm-user-wrap" style="position:relative;">
                 <button class="btn btn-sm btn-link text-white d-flex align-items-center gap-2 text-decoration-none"
                         type="button" id="adminUserDrop">
                     <i class="fas fa-user-circle fa-lg"></i>
@@ -101,29 +101,29 @@ if ($_theme['font_heading'] !== 'Space Grotesk' && $_theme['font_heading'] !== '
                         <div class="text-muted" style="font-size:.75rem;">Administrator</div>
                     </li>
                     <li>
-                        <a class="dropdown-item" href="<?= BASE_URL . e($_adminUser) ?>">
+                        <a class="adm-menu-item" href="<?= BASE_URL . e($_adminUser) ?>">
                             <i class="fas fa-id-card me-2 text-muted"></i>My Profile
                         </a>
                     </li>
                     <li>
-                        <a class="dropdown-item" href="<?= BASE_URL ?>edit-profile">
+                        <a class="adm-menu-item" href="<?= BASE_URL ?>edit-profile">
                             <i class="fas fa-pen me-2 text-muted"></i>Edit Profile
                         </a>
                     </li>
                     <li>
-                        <a class="dropdown-item" href="<?= BASE_URL ?>change-password">
+                        <a class="adm-menu-item" href="<?= BASE_URL ?>change-password">
                             <i class="fas fa-lock me-2 text-muted"></i>Change Password
                         </a>
                     </li>
-                    <li><hr class="dropdown-divider my-1"></li>
+                    <li><hr class="adm-menu-divider my-1"></li>
                     <li>
-                        <a class="dropdown-item" href="<?= BASE_URL ?>" target="_blank">
+                        <a class="adm-menu-item" href="<?= BASE_URL ?>" target="_blank">
                             <i class="fas fa-external-link-alt me-2 text-muted"></i>View Site
                         </a>
                     </li>
-                    <li><hr class="dropdown-divider my-1"></li>
+                    <li><hr class="adm-menu-divider my-1"></li>
                     <li>
-                        <a class="dropdown-item text-danger fw-semibold" href="<?= BASE_URL ?>logout">
+                        <a class="adm-menu-item adm-menu-item--danger" href="<?= BASE_URL ?>logout">
                             <i class="fas fa-sign-out-alt me-2"></i>Sign Out
                         </a>
                     </li>
