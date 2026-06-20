@@ -1,0 +1,17 @@
+# Dependencies
+/vendor/
+
+# Uploads (user content — never commit)
+/uploads/profiles/*
+!/uploads/profiles/default-avatar.png
+!/uploads/profiles/.gitkeep
+/uploads/pages/*
+!/uploads/pages/.gitkeep
+
+# Environment / secrets
+config.php
+
+# Logs & OS
+*.log
+.DS_Store
+Thumbs.db
