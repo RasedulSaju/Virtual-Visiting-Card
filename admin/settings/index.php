@@ -140,7 +140,9 @@ $smtp = [
     'from_name'  => getSetting('smtp_from_name', siteName()),
 ];
 
-$smtpConfigured = (new Mailer())->isConfigured();
+$_mailerInstance = new Mailer();
+$smtpConfigured  = $_mailerInstance->isConfigured();
+$smtpDiagnostics = $_mailerInstance->configStatus();
 $theme            = getTheme();
 $seoGlobalNoindex = getSetting('seo_global_noindex', '0') === '1';
 $robotsTxtCustom  = getSetting('robots_txt_custom', '');
@@ -285,6 +287,34 @@ require_once __DIR__ . '/../layout_header.php';
                         <span class="badge bg-secondary">Not Configured</span>
                     <?php endif; ?>
                 </div>
+                <?php if (!$smtpConfigured): ?>
+                <div class="card-body p-3 pb-0">
+                    <div class="alert alert-warning py-2 px-3 mb-3 small">
+                        <strong><i class="fas fa-stethoscope me-1"></i>Diagnostic — exactly what's failing:</strong>
+                        <table class="table table-sm mb-0 mt-2 bg-transparent">
+                            <tbody>
+                                <?php foreach ($smtpDiagnostics as $check): ?>
+                                <tr>
+                                    <td style="width:24px;">
+                                        <?php if ($check['ok']): ?>
+                                            <i class="fas fa-check-circle text-success"></i>
+                                        <?php else: ?>
+                                            <i class="fas fa-times-circle text-danger"></i>
+                                        <?php endif; ?>
+                                    </td>
+                                    <td class="fw-semibold"><?= e($check['label']) ?></td>
+                                    <td class="text-muted small font-monospace"><?= e($check['detail']) ?></td>
+                                </tr>
+                                <?php endforeach; ?>
+                            </tbody>
+                        </table>
+                        <p class="mb-0 mt-2">
+                            All four must show ✅ for emails to send. If "PHPMailer" shows ❌, verify the
+                            exact path above exists on your server via cPanel File Manager.
+                        </p>
+                    </div>
+                </div>
+                <?php endif; ?>
                 <div class="card-body p-4">
                     <div class="row g-3">
                         <div class="col-md-8">

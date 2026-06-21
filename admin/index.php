@@ -6,14 +6,21 @@ require_once __DIR__ . '/auth_check.php';
 
 $pdo = getDB();
 
-$totalUsers  = (int)$pdo->query("SELECT COUNT(*) FROM users")->fetchColumn();
+$userVisibilityWhere = isSuperAdmin() ? '' : "WHERE role != 'superadmin'";
+
+$totalUsers  = (int)$pdo->query("SELECT COUNT(*) FROM users $userVisibilityWhere")->fetchColumn();
 $totalPages  = (int)$pdo->query("SELECT COUNT(*) FROM pages")->fetchColumn();
 $totalFields = (int)$pdo->query("SELECT COUNT(*) FROM profile_fields WHERE is_active = 1")->fetchColumn();
+
+$newUsers7dWhere = $userVisibilityWhere !== ''
+    ? "$userVisibilityWhere AND created_at >= DATE_SUB(NOW(), INTERVAL 7 DAY)"
+    : "WHERE created_at >= DATE_SUB(NOW(), INTERVAL 7 DAY)";
 $newUsers7d  = (int)$pdo->query(
-    "SELECT COUNT(*) FROM users WHERE created_at >= DATE_SUB(NOW(), INTERVAL 7 DAY)"
+    "SELECT COUNT(*) FROM users $newUsers7dWhere"
 )->fetchColumn();
 
-$recentUsersWhere = isSuperAdmin() ? '' : "WHERE role != 'superadmin'";
+// Reuse the same visibility filter (avoid duplicate variable)
+$recentUsersWhere = $userVisibilityWhere;
 $recentUsers = $pdo->query(
     "SELECT id, username, email, role, created_at FROM users $recentUsersWhere ORDER BY created_at DESC LIMIT 6"
 )->fetchAll();

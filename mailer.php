@@ -15,13 +15,13 @@ class Mailer
     public function __construct()
     {
         $this->cfg = [
-            'host'       => getSetting('smtp_host'),
-            'port'       => getSetting('smtp_port',       '587'),
-            'username'   => getSetting('smtp_username'),
-            'password'   => getSetting('smtp_password'),
-            'encryption' => getSetting('smtp_encryption', 'tls'),
-            'from_email' => getSetting('smtp_from_email'),
-            'from_name'  => getSetting('smtp_from_name',  siteName()),
+            'host'       => trim(getSetting('smtp_host')),
+            'port'       => trim(getSetting('smtp_port',       '587')),
+            'username'   => trim(getSetting('smtp_username')),
+            'password'   => getSetting('smtp_password'), // never trim — spaces may be intentional
+            'encryption' => trim(getSetting('smtp_encryption', 'tls')),
+            'from_email' => trim(getSetting('smtp_from_email')),
+            'from_name'  => trim(getSetting('smtp_from_name',  siteName())),
         ];
     }
 
@@ -31,6 +31,38 @@ class Mailer
             && $this->cfg['username']   !== ''
             && $this->cfg['from_email'] !== ''
             && file_exists(__DIR__ . '/vendor/autoload.php');
+    }
+
+    /**
+     * Returns a detailed breakdown of each requirement, for diagnostics.
+     * @return array<string, array{label:string, ok:bool, detail:string}>
+     */
+    public function configStatus(): array
+    {
+        $autoloadPath = __DIR__ . '/vendor/autoload.php';
+
+        return [
+            'host' => [
+                'label'  => 'SMTP Host',
+                'ok'     => $this->cfg['host'] !== '',
+                'detail' => $this->cfg['host'] !== '' ? $this->cfg['host'] : 'Not set',
+            ],
+            'username' => [
+                'label'  => 'SMTP Username',
+                'ok'     => $this->cfg['username'] !== '',
+                'detail' => $this->cfg['username'] !== '' ? $this->cfg['username'] : 'Not set',
+            ],
+            'from_email' => [
+                'label'  => 'From Email',
+                'ok'     => $this->cfg['from_email'] !== '',
+                'detail' => $this->cfg['from_email'] !== '' ? $this->cfg['from_email'] : 'Not set',
+            ],
+            'autoload' => [
+                'label'  => 'PHPMailer (vendor/autoload.php)',
+                'ok'     => file_exists($autoloadPath),
+                'detail' => $autoloadPath,
+            ],
+        ];
     }
 
     /**
