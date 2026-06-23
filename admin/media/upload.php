@@ -32,9 +32,12 @@ if ($file['error'] !== UPLOAD_ERR_OK) {
     exit;
 }
 
-// Size
-if ($file['size'] > MAX_UPLOAD_SIZE) {
-    echo json_encode(['error' => 'File too large. Max ' . round(MAX_UPLOAD_SIZE / 1048576) . ' MB.']);
+// Size — use admin-configured limit
+$limitMb    = (int)getSetting('upload_limit_mb', '2');
+$limitBytes = $limitMb > 0 ? $limitMb * 1024 * 1024 : MAX_UPLOAD_SIZE;
+
+if ($file['size'] > $limitBytes) {
+    echo json_encode(['error' => "File too large. Max {$limitMb} MB."]);
     exit;
 }
 

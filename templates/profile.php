@@ -108,11 +108,16 @@ $visibleFields = array_filter($profileFields, function ($f) use ($isSelf, $viewe
                 </div>
                 <div class="card-body p-4">
                     <dl class="profile-fields row g-3 mb-0">
-                        <?php foreach ($visibleFields as $field):
+                        <?php foreach ($visibleFields as $i => $field):
                             $val      = e($field['field_value']);
                             $isPriv   = (int)($field['is_public'] ?? 1) === 0;
+                            $delay    = ($i % 4) * 100; // stagger 0, 100, 200, 300ms
                         ?>
-                        <div class="col-sm-6 col-xl-4">
+                        <div class="col-sm-6 col-xl-4"
+                             data-mdb-animation-start="onScroll"
+                             data-mdb-animation="fade-in"
+                             data-mdb-animation-delay="<?= $delay ?>"
+                             data-mdb-animation-duration="500">
                             <dt class="text-muted small fw-normal mb-1">
                                 <i class="<?= e($field['field_icon']) ?> me-1"></i><?= e($field['field_label']) ?>
                                 <?php if ($isPriv): ?>

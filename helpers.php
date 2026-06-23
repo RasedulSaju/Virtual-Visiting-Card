@@ -170,8 +170,12 @@ function uploadProfileImage(array $file, int $userId): string
         throw new RuntimeException($errMap[$file['error']] ?? 'Unknown upload error.');
     }
 
-    if ($file['size'] > MAX_UPLOAD_SIZE) {
-        throw new RuntimeException('File too large. Maximum size is 2 MB.');
+    // Use admin-configured upload limit (falls back to MAX_UPLOAD_SIZE constant)
+    $limitMb    = (int)getSetting('upload_limit_mb', '2');
+    $limitBytes = $limitMb > 0 ? $limitMb * 1024 * 1024 : MAX_UPLOAD_SIZE;
+
+    if ($file['size'] > $limitBytes) {
+        throw new RuntimeException("File too large. Maximum size is {$limitMb} MB.");
     }
 
     $ext = strtolower(pathinfo($file['name'], PATHINFO_EXTENSION));

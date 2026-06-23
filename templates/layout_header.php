@@ -50,6 +50,16 @@ $_og = array_merge([
     <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/mdb-ui-kit/6.4.0/mdb.min.css">
+<?php
+// ── MDB Pro CSS (optional) ───────────────────────────────────
+// Upload your MDB Pro files to assets/mdb-pro/ to enable Pro animations.
+// The free MDB build is always loaded above as a base.
+$_mdbProCss = __DIR__ . '/../assets/mdb-pro/mdb.pro.min.css';
+$_mdbProJs  = __DIR__ . '/../assets/mdb-pro/mdb.pro.min.js';
+if (file_exists($_mdbProCss)):
+?>
+    <link rel="stylesheet" href="<?= BASE_URL ?>assets/mdb-pro/mdb.pro.min.css">
+<?php endif; ?>
     <link rel="stylesheet" href="<?= BASE_URL ?>assets/css/custom.css">
 <?php
 // ── Dynamic theme variables (Admin → Settings → Appearance) ──

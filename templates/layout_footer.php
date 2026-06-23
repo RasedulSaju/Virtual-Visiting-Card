@@ -58,8 +58,15 @@
     </div>
 </footer>
 
-<!-- MDB 5 -->
+<!-- MDB 5 (free) -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/mdb-ui-kit/6.4.0/mdb.umd.min.js"></script>
+<?php
+// MDB Pro JS — only loaded when Pro files are present in assets/mdb-pro/
+$_mdbProJsPath = dirname(__DIR__) . '/assets/mdb-pro/mdb.pro.min.js';
+if (file_exists($_mdbProJsPath)):
+?>
+<script src="<?= BASE_URL ?>assets/mdb-pro/mdb.pro.min.js"></script>
+<?php endif; ?>
 <!-- Custom -->
 <script src="<?= BASE_URL ?>assets/js/custom.js"></script>
 <script>

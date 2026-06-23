@@ -15,6 +15,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         setSetting('registration_open',  isset($_POST['registration_open']) ? '1' : '0');
         setSetting('site_name',          trim($_POST['site_name']        ?? '') ?: siteName());
         setSetting('site_description',   trim($_POST['site_description'] ?? '') ?: siteDescription());
+        // Upload limit — clamp between 1MB and 20MB
+        $uploadMb = max(1, min(20, (int)($_POST['upload_limit_mb'] ?? 2)));
+        setSetting('upload_limit_mb', (string)$uploadMb);
         flash('success', 'General settings saved.');
         redirect('admin/settings/?tab=general');
     }
@@ -37,9 +40,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 
     if ($action === 'save_smtp') {
-        foreach (['smtp_host','smtp_port','smtp_username','smtp_password',
+        foreach (['smtp_host','smtp_port','smtp_username',
                   'smtp_encryption','smtp_from_email','smtp_from_name'] as $k) {
             setSetting($k, trim($_POST[$k] ?? ''));
+        }
+        // Only update password if a new one was actually submitted
+        $newPassword = $_POST['smtp_password'] ?? '';
+        if ($newPassword !== '') {
+            setSetting('smtp_password', $newPassword);
         }
         flash('success', 'SMTP settings saved.');
         redirect('admin/settings/?tab=smtp');
@@ -118,6 +126,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 $registrationOpen = getSetting('registration_open', '1') === '1';
 $siteNameVal      = siteName();
 $siteDescVal      = siteDescription();
+$uploadLimitMb    = (int)getSetting('upload_limit_mb', '2');
 
 $analytics = [
     'ga4_id'           => getSetting('analytics_ga4_id'),
@@ -149,7 +158,8 @@ $robotsTxtCustom  = getSetting('robots_txt_custom', '');
 $robotsTxtPreview = buildRobotsTxt();
 $activeTab        = $_GET['tab'] ?? 'general';
 $dbVersion      = $pdo->query('SELECT VERSION()')->fetchColumn();
-$totalUsers     = (int)$pdo->query('SELECT COUNT(*) FROM users')->fetchColumn();
+$_userCountWhere = isSuperAdmin() ? '' : "WHERE role != 'superadmin'";
+$totalUsers     = (int)$pdo->query("SELECT COUNT(*) FROM users $_userCountWhere")->fetchColumn();
 $totalPages     = (int)$pdo->query('SELECT COUNT(*) FROM pages')->fetchColumn();
 
 $pageTitle = 'Settings';
@@ -248,6 +258,32 @@ require_once __DIR__ . '/../layout_header.php';
                     </div>
                 </div>
             </div>
+
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-header fw-semibold"><i class="fas fa-upload me-2 text-primary"></i>File Upload Limit</div>
+                <div class="card-body p-4">
+                    <div class="row g-3 align-items-center">
+                        <div class="col-sm-4">
+                            <div class="input-group">
+                                <input type="number" name="upload_limit_mb" class="form-control"
+                                       value="<?= $uploadLimitMb ?>" min="1" max="20">
+                                <span class="input-group-text">MB</span>
+                            </div>
+                            <div class="form-text">Between 1 MB and 20 MB.</div>
+                        </div>
+                        <div class="col-sm-8">
+                            <div class="alert alert-info py-2 small mb-0">
+                                <i class="fas fa-info-circle me-1"></i>
+                                PHP server limits: <code>upload_max_filesize = <?= ini_get('upload_max_filesize') ?></code>,
+                                <code>post_max_size = <?= ini_get('post_max_size') ?></code>.
+                                This setting cannot exceed the PHP server limits — if PHP says 2M you can't upload 5M even if you set it here.
+                                To increase PHP limits, edit <code>php.ini</code> or <code>.htaccess</code>.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
             <button type="submit" class="btn btn-primary"><i class="fas fa-save me-1"></i>Save Settings</button>
         </form>
     </div>
@@ -263,7 +299,8 @@ require_once __DIR__ . '/../layout_header.php';
                         <tr><td class="text-muted ps-4">Base URL</td><td class="fw-semibold pe-4 small"><a href="<?= BASE_URL ?>" target="_blank"><?= e(BASE_URL) ?></a></td></tr>
                         <tr><td class="text-muted ps-4">Users</td><td class="fw-semibold pe-4"><?= $totalUsers ?></td></tr>
                         <tr><td class="text-muted ps-4">Pages</td><td class="fw-semibold pe-4"><?= $totalPages ?></td></tr>
-                        <tr><td class="text-muted ps-4">Upload Limit</td><td class="fw-semibold pe-4"><?= number_format(MAX_UPLOAD_SIZE/1048576,0) ?> MB</td></tr>
+                        <tr><td class="text-muted ps-4">Upload Limit</td><td class="fw-semibold pe-4"><?= $uploadLimitMb ?> MB</td></tr>
+                        <tr><td class="text-muted ps-4">PHP Upload Max</td><td class="fw-semibold pe-4"><code><?= ini_get('upload_max_filesize') ?></code></td></tr>
                     </tbody>
                 </table>
             </div>
@@ -340,10 +377,19 @@ require_once __DIR__ . '/../layout_header.php';
                         </div>
                         <div class="col-md-6">
                             <div class="form-outline">
-                                <input type="password" id="smtp_password" name="smtp_password" class="form-control"
-                                       value="<?= e($smtp['password']) ?>" autocomplete="new-password">
-                                <label class="form-label" for="smtp_password">Password</label>
+                                <input type="password" id="smtp_password" name="smtp_password"
+                                       class="form-control" autocomplete="new-password"
+                                       placeholder="<?= $smtp['password'] !== '' ? '••••••••••••' : '' ?>">
+                                <label class="form-label" for="smtp_password">
+                                    Password
+                                    <?php if ($smtp['password'] !== ''): ?>
+                                        <span class="badge bg-success ms-1" style="font-size:.65rem;">Set</span>
+                                    <?php else: ?>
+                                        <span class="badge bg-secondary ms-1" style="font-size:.65rem;">Not set</span>
+                                    <?php endif; ?>
+                                </label>
                             </div>
+                            <div class="form-text">Leave blank to keep the existing password.</div>
                         </div>
                         <div class="col-md-4">
                             <label class="form-label fw-semibold">Encryption</label>

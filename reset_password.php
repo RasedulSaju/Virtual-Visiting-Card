@@ -27,7 +27,7 @@ if ($token !== '') {
     }
 }
 
-if ($token === '' || $tokenUser === null) {
+if ($token === '' || !$tokenUser) {
     $pageTitle = 'Invalid Reset Link';
     $metaRobots = 'noindex,nofollow';
     require __DIR__ . '/templates/layout_header.php';

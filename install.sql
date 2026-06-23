@@ -34,8 +34,7 @@ CREATE TABLE `users` (
   `account_status`    ENUM('active','resigned')       NOT NULL DEFAULT 'active',
   `can_edit_profile`  TINYINT(1)                      NOT NULL DEFAULT 1,
   `meta_robots`       VARCHAR(20)                     NOT NULL DEFAULT 'index,follow',
-  `show_in_directory` TINYINT(1)                      NOT NULL DEFAULT 1
-                        COMMENT 'Visible on /members listing (independent of SEO noindex)',
+  `show_in_directory` TINYINT(1)                      NOT NULL DEFAULT 1,
   `profile_image`     VARCHAR(255)                    NOT NULL DEFAULT 'default-avatar.png',
   `bio`               TEXT,
   `reset_token`       VARCHAR(64)                         NULL DEFAULT NULL,
@@ -138,12 +137,10 @@ SET FOREIGN_KEY_CHECKS = 1;
 -- SEED DATA
 -- ============================================================
 
-
 -- Initial Users
 INSERT INTO `users` (`id`, `username`, `email`, `password_hash`, `role`, `account_status`, `can_edit_profile`, `meta_robots`, `show_in_directory`, `profile_image`, `bio`, `reset_token`, `reset_expires`, `created_at`) VALUES
 (1, 'Rasedul', 'me@rasedulsaju.com', '$2y$12$cBKitkQLdmQHKmySesqoBOGv74gXVFbZM4Capmp2ozGCfQ8HMc9RO', 'superadmin', 'active', 1, 'index,follow', 1, 'default-avatar.png', NULL, NULL, NULL, '2026-06-20 18:25:00'),
 (2, 'RasedulSaju', 'rasedulsaju@gmail.com', '$2y$12$cBKitkQLdmQHKmySesqoBOGv74gXVFbZM4Capmp2ozGCfQ8HMc9RO', 'admin', 'active', 1, 'index,follow', 1, 'default-avatar.png', NULL, NULL, NULL, '2026-06-20 18:25:08');
-
 
 -- Sample page (visible in navigation)
 INSERT INTO `pages` (`slug`, `title`, `content`, `show_in_nav`, `nav_order`) VALUES
@@ -163,6 +160,7 @@ INSERT INTO `profile_fields`
 -- Registration / general settings
 INSERT INTO `settings` (`skey`, `value`) VALUES
   ('registration_open', '1'),
+  ('upload_limit_mb',   '2'),
 
   -- SMTP settings
   ('smtp_host',       ''),
