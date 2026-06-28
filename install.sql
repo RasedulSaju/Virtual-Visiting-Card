@@ -52,7 +52,7 @@ CREATE TABLE `users` (
 -- ────────────────────────────────────────────────────────────
 CREATE TABLE `pages` (
   `id`          INT UNSIGNED NOT NULL AUTO_INCREMENT,
-  `slug`        VARCHAR(200) NOT NULL COMMENT 'URL-safe slug, e.g. about-us',
+  `slug`        VARCHAR(200) NOT NULL,
   `title`       VARCHAR(300) NOT NULL,
   `content`     LONGTEXT,
   `show_in_nav` TINYINT(1)   NOT NULL DEFAULT 0,
@@ -70,15 +70,13 @@ CREATE TABLE `pages` (
 -- ────────────────────────────────────────────────────────────
 CREATE TABLE `profile_fields` (
   `id`          INT UNSIGNED                          NOT NULL AUTO_INCREMENT,
-  `field_name`  VARCHAR(100)                          NOT NULL COMMENT 'Machine key, e.g. twitter',
-  `field_label` VARCHAR(150)                          NOT NULL COMMENT 'Display label',
+  `field_name`  VARCHAR(100)                          NOT NULL,
+  `field_label` VARCHAR(150)                          NOT NULL,
   `field_type`  ENUM('text','url','textarea','date')  NOT NULL DEFAULT 'text',
-  `field_icon`  VARCHAR(100)                          NOT NULL DEFAULT 'fas fa-tag'
-                  COMMENT 'FontAwesome class, e.g. fab fa-twitter',
+  `field_icon`  VARCHAR(100)                          NOT NULL DEFAULT 'fas fa-tag',
   `sort_order`  INT                                   NOT NULL DEFAULT 0,
   `is_active`   TINYINT(1)                            NOT NULL DEFAULT 1,
-  `is_public`   TINYINT(1)                            NOT NULL DEFAULT 1
-                  COMMENT 'If 0, only the profile owner and admins can see this field',
+  `is_public`   TINYINT(1)                            NOT NULL DEFAULT 1,
   `created_at`  DATETIME                              NOT NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`),
   UNIQUE KEY `uq_field_name` (`field_name`)
@@ -121,7 +119,7 @@ CREATE TABLE `invitations` (
   `id`         INT UNSIGNED NOT NULL AUTO_INCREMENT,
   `email`      VARCHAR(150) NOT NULL,
   `token`      VARCHAR(64)  NOT NULL,
-  `invited_by` INT UNSIGNED NOT NULL  COMMENT 'Admin user ID',
+  `invited_by` INT UNSIGNED NOT NULL,
   `used`       TINYINT(1)   NOT NULL DEFAULT 0,
   `expires_at` DATETIME     NOT NULL,
   `created_at` DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP,

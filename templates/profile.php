@@ -114,10 +114,12 @@ $visibleFields = array_filter($profileFields, function ($f) use ($isSelf, $viewe
                             $delay    = ($i % 4) * 100; // stagger 0, 100, 200, 300ms
                         ?>
                         <div class="col-sm-6 col-xl-4"
+                             data-mdb-toggle="animation"
+                             data-mdb-animation="fade-in-up"
                              data-mdb-animation-start="onScroll"
-                             data-mdb-animation="fade-in"
-                             data-mdb-animation-delay="<?= $delay ?>"
-                             data-mdb-animation-duration="500">
+                             data-mdb-animation-on-scroll="once"
+                             data-mdb-animation-duration="500"
+                             data-mdb-animation-delay="<?= $delay ?>">
                             <dt class="text-muted small fw-normal mb-1">
                                 <i class="<?= e($field['field_icon']) ?> me-1"></i><?= e($field['field_label']) ?>
                                 <?php if ($isPriv): ?>
