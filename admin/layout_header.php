@@ -32,6 +32,21 @@ function _adminNavLink(string $href, string $icon, string $label, string $key, s
     <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/mdb-ui-kit/6.4.0/mdb.min.css">
+<?php
+// MDB Pro (optional) — same auto-detection as public layout.
+// Admin pages declare needed modules via $proModules before including this file.
+$_mdbProDir  = dirname(__DIR__) . '/assets/mdb-pro';
+$_mdbProCss  = $_mdbProDir . '/mdb.min.css';
+$_proModules = array_unique($proModules ?? []);
+
+if (file_exists($_mdbProCss)): ?>
+    <link rel="stylesheet" href="<?= BASE_URL ?>assets/mdb-pro/mdb.min.css">
+<?php endif;
+foreach ($_proModules as $_mod):
+    $_modCss = $_mdbProDir . '/modules/' . $_mod . '.min.css';
+    if (file_exists($_modCss)): ?>
+    <link rel="stylesheet" href="<?= BASE_URL ?>assets/mdb-pro/modules/<?= e($_mod) ?>.min.css">
+<?php endif; endforeach; ?>
     <link rel="stylesheet" href="<?= BASE_URL ?>assets/css/custom.css">
     <link rel="stylesheet" href="<?= BASE_URL ?>assets/css/admin.css">
 <?php

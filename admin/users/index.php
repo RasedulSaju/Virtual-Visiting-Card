@@ -108,8 +108,9 @@ $listStmt = $pdo->prepare(
 $listStmt->execute($params);
 $users = $listStmt->fetchAll();
 
-$pageTitle = 'Users';
-$activeNav = 'users';
+$pageTitle  = 'Users';
+$activeNav  = 'users';
+$proModules = ['perfect-scrollbar']; // Pro: smooth custom scrollbar on the table wrapper
 require_once __DIR__ . '/../layout_header.php';
 ?>
 
@@ -154,7 +155,7 @@ require_once __DIR__ . '/../layout_header.php';
     </div>
 
     <div class="card border-0 shadow-sm">
-        <div class="table-responsive">
+        <div class="table-responsive" data-mdb-perfect-scrollbar="true" style="max-height:560px;">
             <table class="table table-hover align-middle mb-0">
                 <thead class="table-light">
                     <tr>

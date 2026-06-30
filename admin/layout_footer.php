@@ -3,6 +3,19 @@
 </div><!-- /admin-wrapper -->
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/mdb-ui-kit/6.4.0/mdb.umd.min.js"></script>
+<?php
+$_mdbProDir  = dirname(__DIR__) . '/assets/mdb-pro';
+$_mdbProJs   = $_mdbProDir . '/mdb.min.js';
+$_proModules = array_unique($proModules ?? []);
+
+if (file_exists($_mdbProJs)): ?>
+<script src="<?= BASE_URL ?>assets/mdb-pro/mdb.min.js"></script>
+<?php endif;
+foreach ($_proModules as $_mod):
+    $_modJs = $_mdbProDir . '/modules/' . $_mod . '.min.js';
+    if (file_exists($_modJs)): ?>
+<script src="<?= BASE_URL ?>assets/mdb-pro/modules/<?= e($_mod) ?>.min.js"></script>
+<?php endif; endforeach; ?>
 <script src="<?= BASE_URL ?>assets/js/custom.js"></script>
 <script>
 document.addEventListener('DOMContentLoaded', () => {

@@ -62,15 +62,19 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/mdb-ui-kit/6.4.0/mdb.umd.min.js"></script>
 <?php
 // MDB Pro JS — auto-loaded when files exist in assets/mdb-pro/
-$_mdbProDir   = dirname(__DIR__) . '/assets/mdb-pro';
-$_mdbProJs    = $_mdbProDir . '/mdb.min.js';
-$_mdbProAnimJ = $_mdbProDir . '/modules/animate.min.js';
+// $proModules is set per-page (e.g. ['datatable', 'perfect-scrollbar'])
+$_mdbProDir  = dirname(__DIR__) . '/assets/mdb-pro';
+$_mdbProJs   = $_mdbProDir . '/mdb.min.js';
+$_proModules = array_unique(array_merge(['animate'], $proModules ?? []));
+
 if (file_exists($_mdbProJs)): ?>
 <script src="<?= BASE_URL ?>assets/mdb-pro/mdb.min.js"></script>
 <?php endif;
-if (file_exists($_mdbProAnimJ)): ?>
-<script src="<?= BASE_URL ?>assets/mdb-pro/modules/animate.min.js"></script>
-<?php endif; ?>
+foreach ($_proModules as $_mod):
+    $_modJs = $_mdbProDir . '/modules/' . $_mod . '.min.js';
+    if (file_exists($_modJs)): ?>
+<script src="<?= BASE_URL ?>assets/mdb-pro/modules/<?= e($_mod) ?>.min.js"></script>
+<?php endif; endforeach; ?>
 <!-- Custom -->
 <script src="<?= BASE_URL ?>assets/js/custom.js"></script>
 <script>

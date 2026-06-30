@@ -53,21 +53,21 @@ $_og = array_merge([
 <?php
 // ── MDB Pro (optional) ───────────────────────────────────────
 // Upload MDB Pro 6.1.0 files to assets/mdb-pro/ to enable Pro features.
-// Expected files:
-//   assets/mdb-pro/mdb.min.css              ← from Pro 6.1.0/css/
-//   assets/mdb-pro/mdb.min.js               ← from Pro 6.1.0/js/
-//   assets/mdb-pro/modules/animate.min.css  ← from Pro 6.1.0/css/modules/
-//   assets/mdb-pro/modules/animate.min.js   ← from Pro 6.1.0/js/modules/
+// Pages declare which modules they need via $proModules array, e.g.:
+//   $proModules = ['datatable', 'perfect-scrollbar'];
+// animate.min.css is always loaded when present (used globally on profile).
 $_mdbProDir    = __DIR__ . '/../assets/mdb-pro';
 $_mdbProCss    = $_mdbProDir . '/mdb.min.css';
-$_mdbProAnimCs = $_mdbProDir . '/modules/animate.min.css';
-if (file_exists($_mdbProCss)):
-?>
+$_proModules   = array_unique(array_merge(['animate'], $proModules ?? []));
+
+if (file_exists($_mdbProCss)): ?>
     <link rel="stylesheet" href="<?= BASE_URL ?>assets/mdb-pro/mdb.min.css">
 <?php endif;
-if (file_exists($_mdbProAnimCs)): ?>
-    <link rel="stylesheet" href="<?= BASE_URL ?>assets/mdb-pro/modules/animate.min.css">
-<?php endif; ?>
+foreach ($_proModules as $_mod):
+    $_modCss = $_mdbProDir . '/modules/' . $_mod . '.min.css';
+    if (file_exists($_modCss)): ?>
+    <link rel="stylesheet" href="<?= BASE_URL ?>assets/mdb-pro/modules/<?= e($_mod) ?>.min.css">
+<?php endif; endforeach; ?>
     <link rel="stylesheet" href="<?= BASE_URL ?>assets/css/custom.css">
 <?php
 // ── Dynamic theme variables (Admin → Settings → Appearance) ──
