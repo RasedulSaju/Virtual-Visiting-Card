@@ -1,263 +1,241 @@
 # Admin Panel Guide
 
-Access the admin panel at `yourdomain.com/vvcard/admin/`  
-Only users with `role = 'admin'` can access it.
+Access the admin panel at `yourdomain.com/admin/`
+Only accounts with `role = 'admin'` or `role = 'superadmin'` can access it.
 
 ---
 
-## Dashboard
+## Day-to-Day Operations
 
-**URL:** `/admin/`
+### Setting Up a Fresh Install
 
-Overview of the site at a glance:
+1. Import `install.sql` → Edit `config.php` → Visit `/setup.php` → Create admin → Delete `setup.php`
+2. Log in at `/login` → you are redirected to `/admin/`
+3. Go to **Settings → General** → Set your Site Name and Description
+4. Go to **Settings → Appearance** → Set your brand colours, font, corner radius
+5. Go to **Settings → SMTP** → Configure email (needed for password resets and invitations)
+6. Go to **Profile Fields** → Create the custom fields you want on member profiles
+7. Go to **Navigation** → Add any CMS pages you've created to the navbar
+8. Done — share your site URL
 
-| Card | Shows |
+---
+
+### Common Admin Workflows
+
+#### Adding a New User
+1. **Admin → Users → New User**
+2. Fill in username, email, password
+3. Choose role: `User` (public member) or `Admin` (panel access)
+4. Toggle **Allow profile editing** ON if they should manage their own profile
+5. Toggle **Show in Members directory** ON/OFF as needed
+6. Set **Search Engine Visibility** (default: Indexed)
+7. Click **Create User**
+
+The user's profile is immediately live at `domain.com/username`.
+
+#### Inviting Someone (Registration Closed)
+1. **Admin → Invitations → Enter email → Generate**
+2. If SMTP is configured → email sends automatically
+3. If SMTP is not configured → copy the link shown on screen and send manually
+4. The link expires in 48 hours and can only be used once
+5. Revoke unused invitations from the list if needed
+
+#### Marking a User as Resigned
+1. **Admin → Users → Edit** the user
+2. Set **Account Status → Resigned**
+3. Save → their public profile now shows a diagonal "RESIGNED" watermark
+4. They are automatically removed from the Members directory
+5. Their profile URL still works — it just shows the watermark and hides details
+
+#### Hiding a User from Members Directory
+1. **Admin → Users → Edit** the user
+2. Toggle **Show in Members Directory** → OFF
+3. Save → they disappear from `/members` but their direct URL still works
+
+This is different from SEO noindex — this only hides them from your own members list, not from Google.
+
+#### Creating a CMS Page
+1. **Admin → Pages → Create Page**
+2. Write a title — the slug auto-generates (e.g. `about-us`)
+3. Write content in the HTML textarea. Use the toolbar for:
+   - **B** Bold · *I* Italic · 🔗 Link · H Heading · ≡ List
+   - 📷 **Image** — click to upload an image and insert it inline
+4. Set **Navigation** → toggle ON + set order if you want it in the navbar
+5. Set **SEO** visibility (default: Indexed)
+6. Click **Save Page** → live at `domain.com/slug`
+
+#### Editing the Navigation Menu
+1. **Admin → Navigation**
+2. Pages marked "Show in Nav" appear here
+3. Drag rows to reorder
+4. Toggle visibility per page
+5. See live preview on the right as you make changes
+6. Click **Save Navigation**
+
+#### Managing Profile Fields
+Fields appear on every user's profile. Users fill them in from their Edit Profile page.
+
+**To add a private field (e.g. Date of Birth):**
+1. **Admin → Profile Fields → Create Field**
+2. Label: `Date of Birth`, Type: `Date`, Icon: `fas fa-birthday-cake`
+3. Toggle **Public → OFF** → this field is only visible to the owner and admins
+4. Save
+
+**To add a social link field:**
+1. Type: `URL`, Icon: `fab fa-linkedin-in`
+2. Public: ON → visible on public profiles
+3. Users with a value see a clickable external link on their profile
+
+#### Changing Theme / Branding
+1. **Admin → Settings → Appearance**
+2. Use the **colour pickers** — 6 colours (primary, accent, headings, body, background, cards)
+3. Adjust **Corner Roundness** with the slider (0 = sharp, 24 = very rounded)
+4. Set **Heading Font** — any Google Font name (e.g. `Poppins`, `Playfair Display`)
+5. Toggle **Animations** on/off
+6. Watch the **live preview** update as you change things
+7. Click **Save Appearance** → changes are live immediately site-wide
+8. Changed your mind? → **Reset to Defaults**
+
+#### Configuring Analytics
+1. **Admin → Settings → Analytics**
+2. Enter your tracking ID(s) — GA4, GTM, Clarity, Meta Pixel, Hotjar, Plausible
+3. **Note:** If you enter both GA4 and GTM IDs, GA4 is suppressed — configure GA4 **inside** GTM instead
+4. Use **Custom Head Code** for any script tag that doesn't have its own field
+5. Save → scripts are injected only on public pages, never in the admin panel
+
+#### Managing SEO
+**Per page or per user:**
+- Edit any page or user → find the **SEO / Search Visibility** selector
+- `Indexed` (default) → appears in Google, included in sitemap
+- `Noindex` → hidden from Google, excluded from sitemap
+
+**Site-wide:**
+- **Admin → Settings → SEO**
+- Enable **Hide entire site** → sends noindex on everything, empties sitemap, blocks robots.txt
+  (useful during development / staging)
+- Customise **robots.txt** → leave blank for the auto-generated default
+
+#### SMTP / Email Setup
+1. **Admin → Settings → SMTP**
+2. Fill in Host, Port, Username, Password, Encryption, From Email, From Name
+3. If SMTP is configured, a diagnostic panel shows which requirement is failing
+4. Click **Send Test Email** → sends a test to any address you enter
+5. Once working: password resets and invitations send via email automatically
+6. When not configured: reset links and invite links are shown on-screen (dev mode)
+
+---
+
+## Users Section
+
+### User Roles
+
+| Role | What they can do |
 |---|---|
-| Total Users | Count of all registered accounts |
-| Total Pages | Count of all CMS pages |
-| Active Fields | Count of active custom profile fields |
-| New (7 days) | Users registered in the last week |
+| `user` | Public profile, edit own profile (if allowed), change password |
+| `admin` | Full admin panel access, manage users/pages/fields/settings |
+| `superadmin` | Same as admin + invisible to regular admins + can promote others |
 
-**Quick actions** — buttons for common tasks:
-- New User · New Page · Send Invite · Add Profile Field
+### Bulk Actions
+Select multiple users with the checkboxes → choose an action:
+- **Enable/Disable profile editing** — lock or unlock self-editing for a group
+- **Set role → User** — demote a batch of admins to user
+- **Delete** — permanently delete with confirmation
 
-**Recent tables** — last 6 users and last 6 pages with direct edit links.
+You cannot select your own account. Superadmin accounts are invisible to regular admins even via bulk actions.
 
----
+### Superadmin Access
+Superadmins are completely invisible in the admin panel for regular admins — they don't appear in any list, stat, or dropdown. Only another superadmin can see or manage them.
 
-## Users
+**To create the first superadmin:**
+1. Add to your `config.php`: `define('SUPERADMIN_SETUP_KEY', 'your-long-secret-key');`
+2. Visit: `yourdomain.com/_account_recovery.php?key=your-long-secret-key`
+3. Enter the username to promote → click **Promote**
+4. Log out and back in — the Superadmin role is now active
 
-**URL:** `/admin/users/`
-
-### User List
-- Search by username or email
-- Paginated (15 per page)
-- Badges show role (`admin` / `user`) and profile editing status
-- **Bulk actions** — select multiple users with checkboxes:
-  - Enable profile editing
-  - Disable profile editing
-  - Set role → User
-  - Delete selected
-- You cannot select or delete your own logged-in account
-
-### Create User
-**URL:** `/admin/users/create.php`
-
-| Field | Notes |
-|---|---|
-| Username | 3–50 chars, letters/numbers/underscores only. Becomes the profile URL slug |
-| Email | Unique across all users |
-| Password | Minimum 8 characters, bcrypt cost-12 hashed |
-| Role | `user` (default) or `admin` |
-| Allow profile editing | Toggle — controls whether user can edit their own profile |
-| Bio | Optional introductory text shown on profile |
-| Profile Picture | JPG/PNG/GIF, max 2 MB. Automatically renamed to `user_ID_timestamp.ext` |
-
-### Edit User
-**URL:** `/admin/users/edit.php?id=N`
-
-Same fields as Create, plus:
-- **New Password** — leave blank to keep existing password
-- **Remove current image** — checkbox to reset to default avatar
-- **Search Visibility** — per-profile `meta_robots` control
-- Cannot change your own role (protection against accidental self-demotion)
-
-### Delete User
-- Available from the list page (individual) and via bulk actions
-- Cascade-deletes all `user_field_values` for that user
-- Uploaded profile image is also deleted from disk
-- Cannot delete your own account
+The tool returns a normal 404 for anyone without the correct key.
 
 ---
 
-## Pages
+## Pages Section
 
-**URL:** `/admin/pages/`
+### Reserved Slugs
+These slugs are used by system routes and **cannot** be used for CMS pages:
+```
+login, logout, register, forgot-password, reset-password,
+edit-profile, change-password, members, sitemap.xml, robots.txt
+```
 
-CMS pages are accessible at `domain.com/slug` (e.g. `domain.com/about-us`).
-
-### Page List
-Shows all pages with nav visibility badge and new SEO status badge (`indexed` / `noindex`).
-
-### Create Page
-**URL:** `/admin/pages/create.php`
-
-| Field | Notes |
-|---|---|
-| Title | Display name of the page |
-| Slug | URL-safe identifier (auto-generated from title, can be overridden). E.g. `about-us` → `domain.com/about-us` |
-| Content | Raw HTML textarea. Supports any HTML, inline CSS, embedded images |
-| Show in navigation | Toggle — whether this page appears in the navbar |
-| Nav Order | Lower number = appears first in navbar |
-| SEO Visibility | `noindex`/`nofollow` control — see [Configuration Reference](configuration.md) |
-
-**Reserved slugs** (cannot be used as page slugs):
-`login`, `logout`, `register`, `forgot-password`, `reset-password`, `edit-profile`, `change-password`, `admin`, `setup`, `members`, `sitemap.xml`, `robots.txt`, `404`
-
-### Edit Page
-Same fields as Create. Changing a slug updates the live URL — make sure to update any existing links.
-
-### Delete Page
-Permanent. Removes the page and all associated data.
+### Page Image Uploads
+The page editor has an **Image** button in the toolbar:
+1. Click **Image** → an upload panel appears above the textarea
+2. Select a JPG/PNG/GIF → click **Upload & Insert**
+3. The image is saved to `uploads/pages/` and an `<img>` tag is inserted at the cursor
+4. Previously uploaded images appear as thumbnails — click any to re-insert
+5. The upload limit follows **Admin → Settings → General → File Upload Limit**
 
 ---
 
-## Profile Fields
-
-**URL:** `/admin/fields/`
-
-Custom fields that appear on **every** user profile. Users fill in their own values on their Edit Profile page.
-
-### Field List
-Shows all fields with type, icon, status, and sort order. Inactive fields are hidden from public profiles but their values are preserved.
-
-### Create Field
-**URL:** `/admin/fields/create.php`
-
-| Field | Notes |
-|---|---|
-| Display Label | Shown on user profiles, e.g. `Twitter Handle` |
-| Machine Name | Unique key, lowercase + underscores, e.g. `twitter_handle` (auto-generated from label) |
-| Field Type | `text` = single line · `url` = validated URL with external link · `textarea` = multiline |
-| Font Awesome Icon | Any FA class, e.g. `fab fa-twitter`, `fas fa-globe`, `fas fa-map-marker-alt` |
-| Sort Order | Lower = appears first on profiles |
-| Active | Inactive fields are hidden from public view |
-
-**Live preview** updates as you type, showing exactly how the field will look on a profile.
-
-### Edit Field
-Same as Create. Changing the machine name doesn't affect existing stored values.
-
-### Delete Field
-**Warning:** Permanently deletes the field AND all user values for that field (cascaded via foreign key). This cannot be undone.
-
----
-
-## Navigation Menu
-
-**URL:** `/admin/nav/`
-
-Controls which pages appear in the public navbar and in what order.
-
-- **Drag rows** to reorder (updates order inputs automatically)
-- **Show in Nav toggle** — per-page visibility switch
-- **Order input** — manual number input for precise ordering
-- **Live preview** panel updates as you toggle pages
-- Save with the **Save Navigation** button
-
-> Pages can also be toggled individually from the Pages edit form.
-
----
-
-## Invitations
-
-**URL:** `/admin/invitations/`
-
-Send signed registration links that work even when public registration is closed.
-
-### Send Invitation
-1. Enter the recipient's email address
-2. Click **Generate Invite Link**
-3. If PHPMailer is configured, the email is sent automatically
-4. If not configured (dev mode), the link is shown on screen — copy and send manually
-5. Invite links expire in **48 hours** and are **single-use**
-
-### Invitation List
-Shows all invitations with status:
-- **Pending** — not yet used, not expired
-- **Used** — registration completed
-- **Expired** — time limit passed
-
-Pending invitations can be **Revoked** (deleted before use).
-
----
-
-## Settings
-
-**URL:** `/admin/settings/`
-
-Five tabs — each saves independently.
+## Settings Reference
 
 ### General Tab
-- **Site Name** — shown in navbar, emails, browser tabs, OG tags
-- **Site Description** — `<meta name="description">` and Open Graph description
-- **Public Registration** — open/closed toggle
-
-### SMTP Tab
-Configure outgoing email for password resets and invitations.
-See [Configuration Reference — SMTP](configuration.md#smtp-tab) for provider details.
-
-**Test Email** — sends a test message to verify your SMTP config is working.
-
-> If PHPMailer is not installed, a warning banner appears with a direct link to the installer.
+| Setting | What it does |
+|---|---|
+| Site Name | Shown in navbar, browser tabs, emails, OG tags |
+| Site Description | `<meta name="description">` and Open Graph description |
+| Public Registration | Open / Closed (invited users can always register) |
+| File Upload Limit | 1–20 MB per image upload (cannot exceed PHP server limits) |
 
 ### Appearance Tab
-Live theme customization — changes preview in real time:
-- **6 color pickers** — primary, accent, headings, body text, background, card surface
-- **Heading font** — any Google Font name (e.g. `Poppins`, `Playfair Display`)
-- **Body font** — Google Font or CSS value (e.g. `system-ui`, `Georgia`)
-- **Corner roundness** — slider from 0 (sharp) to 24 (very rounded)
-- **Animations** — toggle all CSS transitions/animations site-wide
-- **Reset to Defaults** — restores original indigo/violet theme
+| Setting | What it does |
+|---|---|
+| Primary Color | Buttons, links, active nav items |
+| Accent Color | Gradients, card banners, highlights |
+| Heading Color | h1–h6 text |
+| Body Text | Paragraphs, labels |
+| Page Background | Behind cards |
+| Card Surface | Cards, navbar, input backgrounds |
+| Corner Roundness | 0px (sharp) to 24px (rounded) — applied to cards, buttons, badges |
+| Heading Font | Any Google Font name |
+| Body Font | Google Font or CSS value (e.g. `system-ui`, `Georgia`) |
+| Animations | Disables all CSS transitions/animations sitewide when off |
+
+### SMTP Tab
+| Field | Notes |
+|---|---|
+| Host | e.g. `smtp.gmail.com` |
+| Port | `587` (TLS) or `465` (SSL) |
+| Username | Your SMTP account email/username |
+| Password | Never shown in the page source — only a "Set/Not set" badge |
+| Encryption | TLS, SSL, or None |
+| From Email | The sender address recipients see |
+| From Name | The sender name recipients see |
 
 ### SEO Tab
-- **Global noindex** — hides the entire site from search engines when ON (useful during development)
-- **Custom robots.txt** — fully override the auto-generated robots.txt (leave empty for default)
-- **Live preview** — shows what `/robots.txt` will output
-- **Sitemap link** — direct link to view the live `sitemap.xml`
-
-### Analytics Tab
-Enter tracking IDs for analytics platforms.
-See [Configuration Reference — Analytics](configuration.md#analytics-tab) for all options.
+| Setting | What it does |
+|---|---|
+| Hide entire site | Sends `noindex,nofollow` everywhere, empties sitemap, blocks robots.txt |
+| Custom robots.txt | Full override of auto-generated robots.txt |
 
 ---
 
-## Privacy & Visibility Controls
+## Privacy & Visibility Quick Reference
 
-### Private Profile Fields
-When creating or editing a Profile Field (**Admin → Profile Fields**), toggle **Public** off to make that field private. Private fields are only visible to:
-- The profile owner (when logged in)
-- Admins and superadmins
-
-Everyone else viewing the public profile will not see that field at all. Useful for sensitive data like Date of Birth, phone numbers, or internal notes. A 🔒 icon marks private fields throughout the admin panel.
-
-Field types now include **Date** (in addition to Text, URL, Textarea) — useful for birthdays, anniversaries, etc.
-
-### Account Status — Resigned Watermark
-In **Admin → Users → Edit**, set **Account Status** to **Resigned**. This:
-- Displays a diagonal "RESIGNED" watermark stamp across their public profile page
-- Shows a notice banner explaining the person is no longer associated with the site
-- Hides their bio and custom field details from public visitors (admins and the user themselves can still see everything)
-- Automatically excludes them from the Members directory
-- Greys out their profile card slightly
-
-This is useful for former employees/members whose profile link may still be shared but shouldn't appear active.
-
-### Members Directory Visibility
-Each user has a **Show in Members Directory** toggle in **Admin → Users → Edit**, independent from SEO settings:
-- **ON** (default) — appears in `/members` listing
-- **OFF** — hidden from `/members`, but their direct profile URL (`domain.com/username`) still works normally
-
-This is different from the **Search Engine Visibility** (`meta_robots`) setting, which controls whether search engines index the page — not whether it shows in your own members list.
-
-### Superadmin Role
-A third role tier above Admin. Superadmin accounts are **completely invisible to regular admins**:
-- Excluded from the Users list, dashboard recent users, and bulk action targets
-- Direct URL access to edit/delete a superadmin is blocked for regular admins (returns "User not found")
-- Only an existing superadmin can promote another account to superadmin (the role option only appears in the dropdown when you're logged in as superadmin)
-
-**Creating the first superadmin:** Since no superadmin exists by default, promote an existing admin account directly in the database:
-```sql
-UPDATE users SET role = 'superadmin' WHERE username = 'your_admin_username';
-```
-After this, log out and back in — the Superadmin role option will appear in the Users → Edit dropdown for that account, and they'll be able to manage other superadmin accounts from the UI.
+| Goal | Where to set it |
+|---|---|
+| Hide field from public (keep private) | Profile Fields → Edit → Public → OFF |
+| Show resigned watermark on profile | Users → Edit → Account Status → Resigned |
+| Remove from Members directory only | Users → Edit → Show in Members Directory → OFF |
+| Hide from Google (profile) | Users → Edit → Search Engine Visibility → Noindex |
+| Hide from Google (page) | Pages → Edit → SEO → Noindex |
+| Hide entire site from Google | Settings → SEO → Hide entire site |
 
 ---
 
 ## Security Notes
 
-- Admin panel pages always serve `<meta name="robots" content="noindex, nofollow">` — they are not indexed
+- Admin panel pages always serve `noindex, nofollow` — never indexed
 - Sessions are regenerated on login (prevents session fixation)
 - All forms include CSRF tokens
-- Admin cannot delete their own account
-- Admin cannot demote their own role
+- Admin cannot delete or demote their own account
+- Superadmin accounts are protected from regular admin actions even via tampered URLs
+- SMTP password is never rendered in page HTML — inspect-safe

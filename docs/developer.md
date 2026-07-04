@@ -5,101 +5,111 @@
 ## Architecture Overview
 
 ```
-Browser → Apache/Nginx → .htaccess → index.php (Front Controller)
-                                           │
-                    ┌──────────────────────┼──────────────────────┐
-                    │                      │                       │
-              System Routes          Pages Table             Users Table
-           (login, register,       (CMS pages by          (profiles by
-            forgot-password, etc.)      slug)                 username)
-                    │                      │                       │
-              PHP file              templates/             templates/
-              included              page.php               profile.php
-                                        │                       │
-                                layout_header.php + layout_footer.php
+Browser Request
+     │
+     ▼
+.htaccess  ──► index.php (Front Controller)
+                    │
+        ┌───────────┼───────────────┐
+        ▼           ▼               ▼
+  System Routes  pages table   users table
+  (login, etc.)  (by slug)     (by username)
+        │           │               │
+        ▼           ▼               ▼
+   PHP files    page.php        profile.php
+                    │               │
+              layout_header.php + layout_footer.php
 ```
 
-**4-tier routing priority:**
-1. Hardcoded system routes (`login`, `register`, `forgot-password`, etc.)
-2. `pages` table — match slug against URL
-3. `users` table — match username against URL
-4. 404 fallback
+**Routing priority (4-tier):**
+1. Hardcoded system routes — login, logout, register, forgot-password, etc.
+2. `pages` table — match URL slug against `pages.slug`
+3. `users` table — match URL against `users.username`
+4. 404 — everything else
+
+URL is parsed from `$_SERVER['REQUEST_URI']` with `BASE_URL`'s path stripped — no `?url=` query string, no `RewriteBase` needed, works at root or any subfolder automatically.
 
 ---
 
-## File Structure
+## Project File Structure
 
 ```
 vvcard/
-├── index.php                  # Front controller — URL parsing + routing
-├── config.php                 # DB credentials + BASE_URL (gitignored)
-├── app-defaults.php           # Versioned app constants
-├── db.php                     # PDO singleton (getDB())
-├── helpers.php                # All shared functions
-├── mailer.php                 # PHPMailer wrapper class
-├── install.sql                # Complete DB schema + seed data
-├── setup.php                  # One-time admin creator (delete after use)
-├── install_phpmailer.php      # Browser-based PHPMailer installer
-├── install.sh                 # Linux/SSH PHPMailer installer
-├── install.bat                # Windows PHPMailer installer
-├── robots.php                 # Dynamic robots.txt output
-├── sitemap.php                # Dynamic sitemap.xml output
+├── index.php                    # Front controller — URL routing
+├── config.php                   # DB credentials + BASE_URL (gitignored)
+├── app-defaults.php             # Versioned constants (upload limits, debug, etc.)
+├── db.php                       # PDO singleton: getDB()
+├── helpers.php                  # All shared PHP functions
+├── mailer.php                   # PHPMailer SMTP wrapper class
+├── robots.php                   # Dynamic robots.txt output
+├── sitemap.php                  # Dynamic sitemap.xml output
+├── install.sql                  # Complete DB schema + seed data
+├── _account_recovery.php        # Hidden, key-gated superadmin tool
 │
-├── login.php                  # Login form + handler
-├── logout.php                 # Session destroy
-├── register.php               # Registration (invite-aware)
-├── forgot_password.php        # Password reset token generation
-├── reset_password.php         # Password reset form + handler
-├── edit_profile.php           # User self-edit (bio, image, fields)
-├── change_password.php        # Logged-in password change
-├── members.php                # Public members directory
+├── login.php                    # Login form + session handler
+├── logout.php                   # Session destroy
+├── register.php                 # Registration (open/invite-aware)
+├── forgot_password.php          # Password reset token generation
+├── reset_password.php           # New password form + handler
+├── change_password.php          # Logged-in password change
+├── edit_profile.php             # User self-edit (bio, avatar, fields)
+├── members.php                  # Public members directory
 │
 ├── templates/
-│   ├── layout_header.php      # Public navbar + analytics + OG tags + theme
-│   ├── layout_footer.php      # Footer + MDB5 JS + dropdown/collapse init
-│   ├── page.php               # CMS page renderer
-│   ├── profile.php            # User profile card + custom fields
-│   └── 404.php                # 404 error page
+│   ├── layout_header.php        # Public navbar, meta, analytics, theme CSS vars, MDB Pro
+│   ├── layout_footer.php        # Footer, MDB JS, Pro module JS, custom JS
+│   ├── page.php                 # CMS page renderer
+│   ├── profile.php              # User profile card + custom fields + animations
+│   └── 404.php                  # 404 page
 │
 ├── admin/
-│   ├── auth_check.php         # Admin guard (require helpers.php first)
-│   ├── layout_header.php      # Admin sidebar + topbar + theme injection
-│   ├── layout_footer.php      # Admin footer + JS
-│   ├── index.php              # Dashboard
+│   ├── auth_check.php           # Admin session guard
+│   ├── layout_header.php        # Admin sidebar, topbar, theme vars, MDB Pro
+│   ├── layout_footer.php        # Admin JS, Pro module JS
+│   ├── index.php                # Dashboard
 │   ├── users/
-│   │   ├── index.php          # User list + bulk actions
-│   │   ├── create.php         # Create user
-│   │   ├── edit.php           # Edit user
-│   │   └── delete.php         # Delete handler (POST only)
+│   │   ├── index.php            # User list (bulk actions, filters)
+│   │   ├── create.php           # Create user form
+│   │   ├── edit.php             # Edit user form
+│   │   └── delete.php           # POST-only delete handler
 │   ├── pages/
-│   │   ├── index.php          # Page list
-│   │   ├── create.php         # Create page
-│   │   ├── edit.php           # Edit page
-│   │   └── delete.php         # Delete handler (POST only)
+│   │   ├── index.php            # Page list
+│   │   ├── create.php           # Create page (HTML editor + image upload)
+│   │   ├── edit.php             # Edit page
+│   │   └── delete.php           # POST-only delete handler
 │   ├── fields/
-│   │   ├── index.php          # Field list
-│   │   ├── create.php         # Create field
-│   │   ├── edit.php           # Edit field
-│   │   └── delete.php         # Delete handler
+│   │   ├── index.php            # Profile field list
+│   │   ├── create.php           # Create field
+│   │   ├── edit.php             # Edit field
+│   │   └── delete.php           # POST-only delete handler
 │   ├── nav/
-│   │   └── index.php          # Navigation menu builder
+│   │   └── index.php            # Navigation builder (drag + toggle)
 │   ├── invitations/
-│   │   └── index.php          # Send + manage invitations
+│   │   └── index.php            # Send + manage invitations
+│   ├── media/
+│   │   └── upload.php           # AJAX endpoint: page image uploads
 │   └── settings/
-│       └── index.php          # All settings tabs (General, SMTP, Appearance, SEO, Analytics)
+│       └── index.php            # Tabs: General, SMTP, Appearance, SEO, Analytics
 │
 ├── assets/
 │   ├── css/
-│   │   ├── custom.css         # Public design system + CSS variables
-│   │   └── admin.css          # Admin panel layout + sidebar
+│   │   ├── custom.css           # Public design system + CSS variables + watermark
+│   │   └── admin.css            # Admin sidebar layout + topbar + dropdown
 │   ├── js/
-│   │   └── custom.js          # Shared JS (floating labels, dropdown, avatar preview)
-│   └── img/
-│       └── default-avatar.png # Default user avatar
+│   │   └── custom.js            # Floating labels, dropdown, collapse, confirm
+│   └── mdb-pro/                 # MDB Pro files (gitignored — drop in your files)
+│       ├── mdb.min.css
+│       ├── mdb.min.js
+│       └── modules/
+│           ├── animate.min.css
+│           ├── animate.min.js
+│           └── [other modules]
 │
-└── uploads/
-    └── profiles/              # User-uploaded profile images (gitignored)
-        └── .gitkeep
+├── uploads/
+│   ├── profiles/                # User avatars + default-avatar.png
+│   └── pages/                   # Images uploaded via page editor
+│
+└── docs/                        # This documentation
 ```
 
 ---
@@ -110,15 +120,17 @@ vvcard/
 | Column | Type | Notes |
 |---|---|---|
 | `id` | INT UNSIGNED AI PK | |
-| `username` | VARCHAR(50) UNIQUE | Used as URL slug |
+| `username` | VARCHAR(50) UNIQUE | URL slug — `domain.com/username` |
 | `email` | VARCHAR(150) UNIQUE | |
 | `password_hash` | VARCHAR(255) | bcrypt cost-12 |
-| `role` | ENUM('admin','user') | |
-| `can_edit_profile` | TINYINT(1) | Admin-controlled |
+| `role` | ENUM('user','admin','superadmin') | |
+| `account_status` | ENUM('active','resigned') | resigned → watermark on profile |
+| `can_edit_profile` | TINYINT(1) | admin-controlled per user |
 | `meta_robots` | VARCHAR(20) | `index,follow` default |
-| `profile_image` | VARCHAR(255) | Filename in uploads/profiles/ |
+| `show_in_directory` | TINYINT(1) | visible on /members page |
+| `profile_image` | VARCHAR(255) | filename in uploads/profiles/ |
 | `bio` | TEXT | |
-| `reset_token` | VARCHAR(64) | Null when not in reset flow |
+| `reset_token` | VARCHAR(64) | null when not in reset flow |
 | `reset_expires` | DATETIME | 1-hour expiry |
 | `created_at` | DATETIME | |
 
@@ -126,174 +138,163 @@ vvcard/
 | Column | Type | Notes |
 |---|---|---|
 | `id` | INT UNSIGNED AI PK | |
-| `slug` | VARCHAR(200) UNIQUE | URL path segment |
+| `slug` | VARCHAR(200) UNIQUE | URL path — `domain.com/slug` |
 | `title` | VARCHAR(300) | |
 | `content` | LONGTEXT | Raw HTML (admin-trusted) |
-| `show_in_nav` | TINYINT(1) | Navbar visibility |
-| `nav_order` | INT | Lower = first |
+| `show_in_nav` | TINYINT(1) | appears in navbar |
+| `nav_order` | INT | lower = first |
 | `meta_robots` | VARCHAR(20) | `index,follow` default |
-| `updated_at` | DATETIME | Auto-updated |
+| `updated_at` | DATETIME | auto-updated |
 
 ### `profile_fields`
 | Column | Type | Notes |
 |---|---|---|
 | `id` | INT UNSIGNED AI PK | |
-| `field_name` | VARCHAR(100) UNIQUE | Machine key |
-| `field_label` | VARCHAR(150) | Display name |
-| `field_type` | ENUM('text','url','textarea') | |
+| `field_name` | VARCHAR(100) UNIQUE | machine key e.g. `twitter_handle` |
+| `field_label` | VARCHAR(150) | display name |
+| `field_type` | ENUM('text','url','textarea','date') | |
 | `field_icon` | VARCHAR(100) | Font Awesome class |
-| `sort_order` | INT | Display order |
-| `is_active` | TINYINT(1) | |
+| `sort_order` | INT | display order on profiles |
+| `is_active` | TINYINT(1) | inactive = hidden from all profiles |
+| `is_public` | TINYINT(1) | private = owner + admins only |
 | `created_at` | DATETIME | |
 
 ### `user_field_values`
 | Column | Type | Notes |
 |---|---|---|
-| `id` | INT UNSIGNED AI PK | |
 | `user_id` | INT UNSIGNED FK | CASCADE DELETE |
 | `field_id` | INT UNSIGNED FK | CASCADE DELETE |
 | `field_value` | TEXT | |
 
 ### `settings`
-| Column | Type | Notes |
-|---|---|---|
-| `skey` | VARCHAR(100) PK | Setting key |
-| `value` | TEXT | Setting value |
-| `updated_at` | DATETIME | Auto-updated |
+Key/value store. Primary key is `skey`.
 
 ### `invitations`
 | Column | Type | Notes |
 |---|---|---|
-| `id` | INT UNSIGNED AI PK | |
-| `email` | VARCHAR(150) | Recipient |
-| `token` | VARCHAR(64) UNIQUE | 32-byte hex (bin2hex random_bytes) |
-| `invited_by` | INT UNSIGNED FK | Admin user ID |
-| `used` | TINYINT(1) | 0 = pending, 1 = used |
+| `token` | VARCHAR(64) UNIQUE | 32-byte hex |
+| `invited_by` | INT UNSIGNED FK | admin user ID |
+| `used` | TINYINT(1) | 0=pending, 1=used |
 | `expires_at` | DATETIME | 48 hours from creation |
-| `created_at` | DATETIME | |
 
 ---
 
-## helpers.php — Function Reference
+## helpers.php — Full Function Reference
 
-### Output / Security
+### Output
 ```php
 e(string $s): string
-// htmlspecialchars() wrapper — always use this for user output
+// Always wrap user-supplied values in e() before echoing
 echo e($user['username']);
 ```
 
 ### Flash Messages
 ```php
-flash(string $type, string $msg): void
-// Types: 'success', 'error', 'warning', 'info'
-flash('success', 'Profile updated.');
+flash('success', 'Profile saved.');
+flash('error',   'Something went wrong.');
+flash('warning', 'Check your email.');
+flash('info',    'FYI message.');
 
-renderFlash(): string
-// Outputs the MDB5 alert HTML and clears the flash
-echo renderFlash();
+echo renderFlash(); // outputs Bootstrap alert + clears the flash
 ```
 
-### Navigation
+### Session & Auth
 ```php
-redirect(string $path): never
-// Redirects to BASE_URL . $path and exits
-redirect('admin/users/');
-
 isLoggedIn(): bool
-isAdmin(): bool
-requireLogin(): void  // redirects to login if not logged in
-requireAdmin(): void  // redirects to login if not admin
+isAdmin(): bool        // true for admin AND superadmin
+isSuperAdmin(): bool   // true only for superadmin
+
+requireLogin(): void   // redirects to /login if not logged in
+requireAdmin(): void   // redirects to /login if not admin
+requireSuperAdmin(): void  // redirects to /admin/ if not superadmin
+
+redirect('admin/users/');  // redirects to BASE_URL . path and exits
 ```
 
 ### CSRF
 ```php
-csrfToken(): string      // Returns or creates session CSRF token
-csrfField(): string      // Returns hidden input HTML
-verifyCsrf(): void       // Validates POST token, exits 403 on failure
+echo csrfField();   // <input type="hidden" name="csrf_token" value="...">
+verifyCsrf();       // validates POST token — call at top of every POST handler
 ```
 
 ### Database
 ```php
-getDB(): PDO
-// Returns PDO singleton with ERRMODE_EXCEPTION, EMULATE_PREPARES=false
 $pdo = getDB();
-$stmt = $pdo->prepare('SELECT * FROM users WHERE id = ?');
-$stmt->execute([$id]);
-```
-
-### Site Identity
-```php
-siteName(): string         // Admin-editable site name (cached)
-siteDescription(): string  // Admin-editable site description (cached)
-siteUrl(): string          // Returns BASE_URL
+// Returns PDO singleton with:
+// - ERRMODE_EXCEPTION (all errors throw exceptions)
+// - FETCH_ASSOC (rows as associative arrays)
+// - EMULATE_PREPARES = false (real prepared statements)
 ```
 
 ### Settings
 ```php
-getSetting(string $key, string $default = ''): string
-setSetting(string $key, string $value): void
+getSetting('site_name', 'Default');   // reads from settings table
+setSetting('site_name', 'New Name');  // upserts into settings table
+```
+
+### Site Identity
+```php
+siteName(): string         // from settings, falls back to APP_NAME
+siteDescription(): string  // from settings, falls back to APP_DESCRIPTION
+siteUrl(): string          // BASE_URL
 ```
 
 ### Theme
 ```php
-getTheme(): array          // All theme settings as associative array
-darkenColor(string $hex, int $percent = 15): string
-lightenColor(string $hex, int $percent = 90): string
+$theme = getTheme();
+// Returns array with keys: primary_color, accent_color, heading_color,
+// text_color, bg_color, surface_color, border_radius, font_heading,
+// font_body, enable_animations
+
+darkenColor('#4f46e5', 15):  string  // darken hex by 15%
+lightenColor('#4f46e5', 90): string  // lighten hex by 90%
 ```
 
 ### SEO
 ```php
-resolveMetaRobots(string $itemDirective = 'index,follow'): string
-// Combines per-item setting with global noindex toggle
-metaRobotsLabel(string $directive): string
-buildRobotsTxt(): string   // Generates robots.txt content from settings
+resolveMetaRobots('index,follow'): string
+// Applies global noindex toggle if enabled — always use this
+
+metaRobotsLabel('noindex,nofollow'): string  // human-readable label
+buildRobotsTxt(): string  // generates full robots.txt content
 ```
 
-### Navigation
+### Files & Avatars
 ```php
-getNavPages(): array
-// Returns pages WHERE show_in_nav = 1 ORDER BY nav_order ASC
-```
-
-### Utility
-```php
-slugify(string $text): string
-// 'About Us' → 'about-us'
-
-truncate(string $str, int $length = 60): string
-// Truncates with ellipsis
-
-avatarUrl(string $filename): string
+avatarUrl('user_1_1234.jpg'): string
 // Returns full URL, falls back to default avatar if file missing
 
-uploadProfileImage(array $file, int $userId): string
-// Validates and moves uploaded image, returns new filename
-// Throws RuntimeException on validation failure
+uploadProfileImage($_FILES['image'], $userId): string
+// Validates MIME, extension, size — moves to UPLOAD_DIR
+// Returns new filename. Throws RuntimeException on failure.
 
-deleteProfileImage(string $filename): void
-// Deletes file from disk (skips DEFAULT_AVATAR)
+deleteProfileImage('user_1_1234.jpg'): void
+// Deletes file from disk (skips default avatar)
+```
+
+### Utilities
+```php
+slugify('About Us'): string     // 'about-us'
+truncate('Long text...', 60): string  // truncates with ellipsis
+getNavPages(): array  // pages WHERE show_in_nav=1 ORDER BY nav_order
 ```
 
 ---
 
-## Adding a New System Route
+## How To: Common Developer Tasks
 
-In `index.php`, add to the `$systemRoutes` array:
+### Add a New Public Route
+In `index.php`, add to `$systemRoutes`:
 ```php
 $systemRoutes = [
     // ... existing routes ...
-    'my-new-page' => __DIR__ . '/my_new_page.php',
+    'my-page' => __DIR__ . '/my_page.php',
 ];
 ```
-Then create `my_new_page.php` in the project root.
+Then create `my_page.php` in the project root.
 
----
-
-## Adding a New Admin Section
-
-1. Create directory: `admin/mysection/`
-2. Create `admin/mysection/index.php`:
+### Add a New Admin Section
+1. Create `admin/mysection/index.php`:
 ```php
 <?php
 declare(strict_types=1);
@@ -301,8 +302,11 @@ declare(strict_types=1);
 require_once __DIR__ . '/../../helpers.php';
 require_once __DIR__ . '/../auth_check.php';
 
+// Optional: declare MDB Pro modules for this page
+// $proModules = ['datatable'];
+
 $pageTitle = 'My Section';
-$activeNav = 'mysection'; // matches sidebar key
+$activeNav = 'mysection';
 require_once __DIR__ . '/../layout_header.php';
 ?>
 
@@ -310,48 +314,275 @@ require_once __DIR__ . '/../layout_header.php';
 
 <?php require_once __DIR__ . '/../layout_footer.php'; ?>
 ```
-3. Add to `admin/layout_header.php` sidebar:
+2. Add to the sidebar in `admin/layout_header.php`:
 ```php
 <?= _adminNavLink(BASE_URL . 'admin/mysection/', 'fas fa-star', 'My Section', 'mysection', $activeNav) ?>
 ```
 
----
-
-## Adding a New Theme Variable
-
-1. Add to `migration_005_theme_settings.sql` (or `install.sql`):
+### Add a New Settings Key
+1. In the `settings` INSERT block in `install.sql`:
 ```sql
-INSERT INTO settings (skey, value) VALUES ('theme_my_var', '#ffffff')
-ON DUPLICATE KEY UPDATE value = VALUES(value);
+('my_new_setting', 'default_value'),
 ```
-2. Add to `getTheme()` in `helpers.php`:
+2. Read it anywhere with `getSetting('my_new_setting', 'fallback')`.
+3. Update it with `setSetting('my_new_setting', $value)`.
+
+### Add a New Theme Color Variable
+1. Add to `getTheme()` in `helpers.php`:
 ```php
 $defaults = [
     // ... existing ...
-    'my_var' => '#ffffff',
+    'my_color' => '#ff0000',
 ];
 ```
-3. Inject CSS in `layout_header.php` theme block:
-```php
---cms-my-var: <?= e($_theme['my_var']) ?>;
+2. Add to `install.sql` settings seed:
+```sql
+('theme_my_color', '#ff0000'),
 ```
-4. Use in `custom.css`:
+3. Inject into both layout headers' `:root` block:
+```php
+--cms-my-color: <?= e($_theme['my_color']) ?>;
+```
+4. Use in CSS:
 ```css
-.my-element { color: var(--cms-my-var); }
+.my-element { color: var(--cms-my-color); }
+```
+5. Add a colour picker in `admin/settings/index.php` Appearance tab.
+
+### Add a New Profile Field Type
+1. Update the ENUM in `install.sql`:
+```sql
+`field_type` ENUM('text','url','textarea','date','phone') NOT NULL DEFAULT 'text',
+```
+2. Add the option to `admin/fields/create.php` and `edit.php`:
+```html
+<option value="phone">Phone Number</option>
+```
+3. Add rendering in `templates/profile.php` and `edit_profile.php`:
+```php
+} elseif ($field['field_type'] === 'phone') {
+    echo '<a href="tel:' . e($val) . '">' . e($val) . '</a>';
+}
+```
+
+---
+
+## MDB Pro Module System
+
+### How It Works
+Both public and admin layouts support a `$proModules` array. Declare it
+before including `layout_header.php` and the matching CSS/JS files are
+auto-loaded **only if they exist** in `assets/mdb-pro/modules/`.
+
+```php
+// At the top of any page, BEFORE requiring layout_header.php:
+$proModules = ['datatable', 'perfect-scrollbar'];
+require_once __DIR__ . '/../layout_header.php';
+```
+
+- Pages that don't declare `$proModules` load zero extra files
+- `animate` is always auto-included on public pages (used on profile)
+- Admin pages have no automatic modules — declare everything explicitly
+
+### Available Modules (from MDB Pro 6.1.0)
+Upload from `MDB5-STANDARD-UI-KIT-Pro-Advanced-6.1.0/css/modules/` and `js/modules/`
+into `assets/mdb-pro/modules/`:
+
+| Module name | CSS file | JS file | Use for |
+|---|---|---|---|
+| `animate` | ✅ | ✅ | Scroll/click/hover animations |
+| `perfect-scrollbar` | ✅ | ✅ | Custom styled scrollbars |
+| `datatable` | ✅ | ✅ | Sortable/searchable/paginated tables |
+| `datepicker` | ✅ | ✅ | Date picker input |
+| `timepicker` | ✅ | ✅ | Time picker input |
+| `date-time-picker` | ✅ | ✅ | Combined date + time |
+| `autocomplete` | ✅ | ✅ | Search-as-you-type input |
+| `select` | ✅ | ✅ | Custom styled select dropdown |
+| `lightbox` | ✅ | ✅ | Image gallery lightbox |
+| `sidenav` | ✅ | ✅ | Slide-in side navigation |
+| `stepper` | ✅ | ✅ | Multi-step form wizard |
+| `rating` | ✅ | ✅ | Star rating input |
+| `sticky` | ✅ | ✅ | Sticky elements on scroll |
+| `navbar` | ✅ | ✅ | Scroll-aware navbar behaviour |
+| `modal` | ✅ | ✅ | Enhanced modals |
+| `chips` | ✅ | ✅ | Tag / chip inputs |
+| `loading-management` | — | ✅ | Loading overlays / spinners |
+| `smooth-scroll` | — | ✅ | Smooth anchor scrolling |
+| `lazy-load` | — | ✅ | Lazy image loading |
+| `infinite-scroll` | — | ✅ | Infinite scroll feed |
+| `toast` | — | ✅ | Toast notifications |
+| `perfect-scrollbar` | ✅ | ✅ | Custom scrollbars |
+| `clipboard` | — | ✅ | Copy to clipboard |
+| `touch` | — | ✅ | Touch / swipe gesture support |
+| `charts` | — | ✅ | Chart.js Pro wrapper |
+
+### Animation Usage (confirmed from Pro 6.1.0 source)
+```html
+<div data-mdb-toggle="animation"
+     data-mdb-animation="fade-in-up"
+     data-mdb-animation-start="onScroll"
+     data-mdb-animation-on-scroll="once"
+     data-mdb-animation-duration="500"
+     data-mdb-animation-delay="100">
+  Animated content
+</div>
+```
+
+**`data-mdb-animation-start` options:** `onClick` · `onScroll` · `onLoad` · `onHover`
+**`data-mdb-animation-on-scroll` options:** `once` · `repeat`
+
+**All animation names:**
+```
+fade-in-up / fade-in-down / fade-in-left / fade-in-right
+fade-out-up / fade-out-down / fade-out-left / fade-out-right
+fly-in / fly-in-up / fly-in-down / fly-in-left / fly-in-right
+slide-in-up / slide-in-down / slide-in-left / slide-in-right
+zoom-in / zoom-out / drop-in / drop-out
+flash / glow / jiggle / pulse / shake / tada
+```
+
+### Datatable Example
+```php
+<?php
+$proModules = ['datatable', 'perfect-scrollbar'];
+require_once __DIR__ . '/../layout_header.php';
+?>
+
+<div id="myTable" class="datatable"></div>
+
+<script>
+new mdb.Datatable(document.getElementById('myTable'), {
+    columns: [
+        { label: 'Name',  field: 'name',  sort: true },
+        { label: 'Email', field: 'email', sort: false },
+    ],
+    rows: <?= json_encode($yourPhpDataArray) ?>,
+    pagination: true,
+    entries:    10,
+    hover:      true,
+    fixedHeader: true,
+});
+</script>
+```
+
+### Perfect Scrollbar Example
+```html
+<div data-mdb-perfect-scrollbar="true" style="height:400px; overflow:hidden;">
+    Very long content...
+</div>
+```
+
+### Smooth Scroll Example
+```html
+<a href="#section1" data-mdb-smooth-scroll="smooth-scroll"
+   data-mdb-offset="80">Jump to section</a>
+```
+`data-mdb-offset="80"` accounts for the fixed navbar height.
+
+### Lazy Load Images
+```html
+<img data-mdb-lazy-src="actual-image.jpg"
+     data-mdb-lazy-animation="fade-in"
+     data-mdb-lazy-delay="300"
+     src="placeholder.jpg" alt="">
+
+<script>
+document.querySelectorAll('[data-mdb-lazy-src]').forEach(img => new mdb.LazyLoad(img));
+</script>
+```
+
+### Toast Notification
+```html
+<div id="myToast" class="toast" role="alert">
+    <div class="toast-header">
+        <strong class="me-auto">Saved</strong>
+        <button type="button" class="btn-close" data-mdb-dismiss="toast"></button>
+    </div>
+    <div class="toast-body">Changes saved successfully.</div>
+</div>
+
+<script>
+new mdb.Toast(document.getElementById('myToast'), {
+    autohide: true,
+    delay:    3000,
+    position: 'top-right',
+    stacking: true,
+}).show();
+</script>
+```
+
+### Loading Overlay
+```js
+// Full page loader — no extra module needed (built into mdb.min.js)
+const loader = new mdb.Loading(document.getElementById('pageLoader'), {
+    backdrop:        true,
+    backdropOpacity: 0.4,
+    scroll:          false,
+});
+loader.show();
+// ...after async work:
+loader.hide();
+```
+
+---
+
+## CSS Variable Reference
+
+All theme values are injected as CSS custom properties in both layout headers.
+Use them in any custom CSS to stay consistent with the admin-controlled theme.
+
+```css
+var(--cms-primary)       /* Primary brand color */
+var(--cms-primary-dark)  /* Darkened primary (hover states) */
+var(--cms-accent)        /* Accent/gradient color */
+var(--cms-ink)           /* Heading text color */
+var(--cms-body)          /* Body text color */
+var(--cms-bg)            /* Page background */
+var(--cms-surface)       /* Card / input background */
+var(--cms-radius)        /* Border radius (px) */
+var(--cms-font-display)  /* Heading font stack */
+var(--cms-font-body)     /* Body font stack */
+var(--cms-border)        /* Border color */
+var(--cms-muted)         /* Muted / placeholder text */
+var(--cms-shadow)        /* Default box shadow */
+var(--cms-shadow-lg)     /* Large box shadow */
 ```
 
 ---
 
 ## Security Model
 
-| Threat | Defense |
+| Threat | Defence |
 |---|---|
-| SQL Injection | PDO prepared statements, emulation off |
-| XSS | `e()` (htmlspecialchars) on all user output |
-| CSRF | `csrfToken()` / `verifyCsrf()` on all POST forms |
-| File upload attacks | finfo MIME check + extension whitelist + filename sanitization |
-| Session fixation | `session_regenerate_id(true)` on login |
-| Password brute force | bcrypt cost-12, no enumeration (consistent response for unknown email) |
+| SQL injection | PDO prepared statements, `EMULATE_PREPARES = false` |
+| XSS | `e()` on all output — `htmlspecialchars(ENT_QUOTES)` |
+| CSRF | `csrfField()` + `verifyCsrf()` on every POST form |
+| File upload abuse | `finfo` MIME check + extension whitelist + sanitized filename |
 | Directory traversal | All filenames replaced with `user_ID_timestamp.ext` |
-| Admin access | `requireAdmin()` guard on every admin file |
-| Sensitive files | `.htaccess` blocks direct access to `.php` config/helper files and `.sql` files |
+| Session fixation | `session_regenerate_id(true)` on login |
+| Cookie theft | `httponly`, `samesite=Lax`, optional `secure` flag |
+| Admin self-delete | Blocked in both individual and bulk delete |
+| Superadmin exposure | Filtered from every query, direct URLs blocked for regular admins |
+| SMTP password exposure | Never rendered in HTML — not even as an input value |
+| Sensitive file access | `.htaccess` blocks direct access to `config.php`, `db.php`, `helpers.php`, `mailer.php`, `*.sql`, `*.md`, `*.log` |
+| Secret tool discovery | `_account_recovery.php` returns identical 404 without the correct key |
+
+---
+
+## Constants Reference (`app-defaults.php`)
+
+| Constant | Default | Override in |
+|---|---|---|
+| `APP_NAME` | `'Virtual Visiting Card'` | `config.php` |
+| `APP_DESCRIPTION` | `'Create and share...'` | `config.php` |
+| `APP_DEBUG` | `true` | `config.php` — **set false in production** |
+| `SESSION_LIFETIME` | `0` (until browser closes) | `config.php` |
+| `UPLOAD_DIR` | `/path/to/vvcard/uploads/profiles/` | `config.php` |
+| `UPLOAD_URL` | `BASE_URL . 'uploads/profiles/'` | `config.php` |
+| `MAX_UPLOAD_SIZE` | `2 * 1024 * 1024` (2 MB) | `config.php` |
+| `ALLOWED_EXT` | `['jpg','jpeg','png','gif']` | `config.php` |
+| `ALLOWED_MIME` | `['image/jpeg','image/png','image/gif']` | `config.php` |
+| `DEFAULT_AVATAR` | `'default-avatar.png'` | `config.php` |
+| `UPLOAD_DIR_PAGES` | `/path/to/vvcard/uploads/pages/` | `config.php` |
+| `UPLOAD_URL_PAGES` | `BASE_URL . 'uploads/pages/'` | `config.php` |
+| `SUPERADMIN_SETUP_KEY` | *(undefined)* | `config.php` — **define to activate recovery tool** |
