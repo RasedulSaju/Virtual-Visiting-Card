@@ -154,6 +154,7 @@ vvcard/
 | `field_label` | VARCHAR(150) | display name |
 | `field_type` | ENUM('text','url','textarea','date') | |
 | `field_icon` | VARCHAR(100) | Font Awesome class |
+| `edit_permission` | ENUM('user','admin') | `user` = self-service; `admin` = only admin sets it, member sees read-only |
 | `sort_order` | INT | display order on profiles |
 | `is_active` | TINYINT(1) | inactive = hidden from all profiles |
 | `is_public` | TINYINT(1) | private = owner + admins only |

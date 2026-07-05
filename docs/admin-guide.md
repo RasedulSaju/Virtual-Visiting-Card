@@ -73,18 +73,55 @@ This is different from SEO noindex — this only hides them from your own member
 6. Click **Save Navigation**
 
 #### Managing Profile Fields
-Fields appear on every user's profile. Users fill them in from their Edit Profile page.
+Fields appear on every user's profile. By default, users fill them in themselves.
+Some facts, though, should be **fixed by the company/admin** — Designation,
+Department, Office Phone, PABX Extension, Fax, Office Address — since these
+aren't things a member should self-report or edit.
 
-**To add a private field (e.g. Date of Birth):**
+**To add a company-controlled field (e.g. Designation):**
+1. **Admin → Profile Fields → Create Field**
+2. Label: `Designation`, Type: `Text`, Icon: `fas fa-briefcase`
+3. Set **Who Sets the Value? → Admin only**
+4. Save
+
+**To set the value for each member:**
+1. **Admin → Users → Edit** the user
+2. Scroll to the **Company Details** card (appears automatically once you have
+   at least one admin-only field)
+3. Fill in the value for that specific member — e.g. `Senior Manager`
+4. Save
+
+The member sees this field on their **Edit Profile** page as **read-only**
+(greyed out, with a shield icon) — they can see it but not change it. It
+displays on their public profile exactly like any other field.
+
+**Typical setup for a company directory:**
+
+| Field | Who Sets the Value? | Notes |
+|---|---|---|
+| Designation | Admin only | e.g. "Senior Software Engineer" |
+| Department | Admin only | e.g. "Engineering" |
+| Employee ID | Admin only | Internal reference |
+| Office Phone | Admin only | Fixed extension or PABX line |
+| Office Address | Admin only | Same for most employees — set per person |
+| Personal Website | Member | Self-reported, optional |
+| LinkedIn | Member | Self-reported, optional |
+
+Since each field's value is still stored **per user**, if most employees share
+the same office address you'll enter it once per person — but you only need
+to do this once when onboarding them, and it stays fixed until you change it.
+
+#### To add a private field (e.g. Date of Birth):
 1. **Admin → Profile Fields → Create Field**
 2. Label: `Date of Birth`, Type: `Date`, Icon: `fas fa-birthday-cake`
 3. Toggle **Public → OFF** → this field is only visible to the owner and admins
 4. Save
 
-**To add a social link field:**
+#### To add a social link field:
 1. Type: `URL`, Icon: `fab fa-linkedin-in`
-2. Public: ON → visible on public profiles
-3. Users with a value see a clickable external link on their profile
+2. Who Sets the Value?: `Member` (self-service, default)
+3. Public: ON → visible on public profiles
+4. Users with a value see a clickable external link on their profile
 
 #### Changing Theme / Branding
 1. **Admin → Settings → Appearance**

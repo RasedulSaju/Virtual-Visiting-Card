@@ -128,6 +128,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $_SESSION['role']     = $role;
             }
 
+            // Save admin-controlled profile field values (Designation, Office Phone, etc.)
+            $adminFieldsStmt = $pdo->query(
+                "SELECT id FROM profile_fields WHERE edit_permission = 'admin' AND is_active = 1"
+            );
+            foreach ($adminFieldsStmt->fetchAll() as $af) {
+                $fid = (int)$af['id'];
+                $val = trim($_POST['admin_field_' . $fid] ?? '');
+                $pdo->prepare(
+                    'INSERT INTO user_field_values (user_id, field_id, field_value)
+                     VALUES (?, ?, ?)
+                     ON DUPLICATE KEY UPDATE field_value = VALUES(field_value)'
+                )->execute([$userId, $fid, $val]);
+            }
+
             flash('success', 'User updated successfully.');
             redirect('admin/users/edit.php?id=' . $userId);
         } catch (PDOException $ex) {
@@ -140,6 +154,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $userStmt->execute([$userId]);
     $user = $userStmt->fetch();
 }
+
+// Load admin-controlled profile fields (Designation, Office Phone, etc.) for this user
+$adminFieldsStmt = $pdo->prepare(
+    "SELECT pf.id, pf.field_label, pf.field_type, pf.field_icon,
+            COALESCE(ufv.field_value, '') AS field_value
+     FROM   profile_fields pf
+     LEFT JOIN user_field_values ufv ON pf.id = ufv.field_id AND ufv.user_id = ?
+     WHERE  pf.edit_permission = 'admin' AND pf.is_active = 1
+     ORDER  BY pf.sort_order ASC"
+);
+$adminFieldsStmt->execute([$userId]);
+$adminFields = $adminFieldsStmt->fetchAll();
 
 $pageTitle = 'Edit User: ' . $user['username'];
 $activeNav = 'users';
@@ -286,6 +312,58 @@ require_once __DIR__ . '/../layout_header.php';
                     </div>
                 </div>
             </div>
+
+            <?php if ($adminFields): ?>
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-header bg-transparent border-bottom fw-semibold">
+                    <i class="fas fa-building me-2 text-primary"></i>Company Details
+                    <small class="text-muted fw-normal ms-1">— set by admin, shown read-only to the member</small>
+                </div>
+                <div class="card-body p-4">
+                    <div class="row g-3">
+                        <?php foreach ($adminFields as $af): ?>
+                        <div class="col-md-6">
+                            <?php if ($af['field_type'] === 'textarea'): ?>
+                                <div class="form-outline">
+                                    <textarea name="admin_field_<?= (int)$af['id'] ?>"
+                                              id="admin_field_<?= (int)$af['id'] ?>"
+                                              class="form-control" rows="2"
+                                              placeholder=" "><?= e($af['field_value']) ?></textarea>
+                                    <label class="form-label" for="admin_field_<?= (int)$af['id'] ?>">
+                                        <i class="<?= e($af['field_icon']) ?> me-1"></i><?= e($af['field_label']) ?>
+                                    </label>
+                                </div>
+                            <?php elseif ($af['field_type'] === 'date'): ?>
+                                <div class="form-outline">
+                                    <input type="date" name="admin_field_<?= (int)$af['id'] ?>"
+                                           id="admin_field_<?= (int)$af['id'] ?>"
+                                           class="form-control" value="<?= e($af['field_value']) ?>" placeholder=" ">
+                                    <label class="form-label" for="admin_field_<?= (int)$af['id'] ?>">
+                                        <i class="<?= e($af['field_icon']) ?> me-1"></i><?= e($af['field_label']) ?>
+                                    </label>
+                                </div>
+                            <?php else: ?>
+                                <div class="form-outline">
+                                    <input type="<?= $af['field_type'] === 'url' ? 'url' : 'text' ?>"
+                                           name="admin_field_<?= (int)$af['id'] ?>"
+                                           id="admin_field_<?= (int)$af['id'] ?>"
+                                           class="form-control" value="<?= e($af['field_value']) ?>" placeholder=" ">
+                                    <label class="form-label" for="admin_field_<?= (int)$af['id'] ?>">
+                                        <i class="<?= e($af['field_icon']) ?> me-1"></i><?= e($af['field_label']) ?>
+                                    </label>
+                                </div>
+                            <?php endif; ?>
+                        </div>
+                        <?php endforeach; ?>
+                    </div>
+                    <div class="form-text mt-2">
+                        <i class="fas fa-info-circle me-1"></i>
+                        Manage which fields appear here in <a href="<?= BASE_URL ?>admin/fields/">Profile Fields</a> —
+                        set "Who Sets the Value?" to Admin only.
+                    </div>
+                </div>
+            </div>
+            <?php endif; ?>
 
             <div class="d-flex gap-2">
                 <button type="submit" class="btn btn-primary">

@@ -43,7 +43,7 @@ if (!isAdmin() && !(bool)$user['can_edit_profile']) {
 
 // Load custom fields with current user values
 $fieldStmt = $pdo->prepare(
-    'SELECT pf.id, pf.field_name, pf.field_label, pf.field_type, pf.field_icon, pf.is_public,
+    'SELECT pf.id, pf.field_name, pf.field_label, pf.field_type, pf.field_icon, pf.is_public, pf.edit_permission,
             COALESCE(ufv.field_value, \'\') AS field_value
      FROM   profile_fields pf
      LEFT JOIN user_field_values ufv ON pf.id = ufv.field_id AND ufv.user_id = ?
@@ -80,13 +80,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $pdo->prepare('UPDATE users SET bio = ?, profile_image = ? WHERE id = ?')
                 ->execute([$bio, $newImage, $userId]);
 
-            // Upsert custom field values
+            // Upsert custom field values — admin-only fields are NEVER
+            // written here, even if present in POST data (tamper-proof)
             $upsert = $pdo->prepare(
                 'INSERT INTO user_field_values (user_id, field_id, field_value)
                  VALUES (?, ?, ?)
                  ON DUPLICATE KEY UPDATE field_value = VALUES(field_value)'
             );
             foreach ($profileFields as $field) {
+                if ($field['edit_permission'] === 'admin') {
+                    continue; // read-only for the member — skip entirely
+                }
                 $val = trim($_POST['field_' . $field['id']] ?? '');
                 $upsert->execute([$userId, $field['id'], $val]);
             }
@@ -182,9 +186,25 @@ require __DIR__ . '/templates/layout_header.php';
                     <div class="row g-3">
                         <?php foreach ($profileFields as $field):
                             $isPrivateField = (int)($field['is_public'] ?? 1) === 0;
+                            $isAdminField   = $field['edit_permission'] === 'admin';
                         ?>
                         <div class="col-md-6">
-                            <?php if ($field['field_type'] === 'textarea'): ?>
+                            <?php if ($isAdminField): ?>
+                                <!-- Admin-controlled — read-only display, no input name so it's never submitted -->
+                                <div class="form-outline">
+                                    <input type="text" id="field_<?= (int)$field['id'] ?>"
+                                           class="form-control" value="<?= e($field['field_value'] ?: '—') ?>"
+                                           placeholder=" " readonly disabled>
+                                    <label class="form-label" for="field_<?= (int)$field['id'] ?>">
+                                        <i class="<?= e($field['field_icon']) ?> me-1"></i><?= e($field['field_label']) ?>
+                                        <i class="fas fa-shield-alt ms-1 text-primary" style="font-size:.7rem;" title="Set by admin"></i>
+                                        <?php if ($isPrivateField): ?>
+                                            <i class="fas fa-lock ms-1 text-warning" style="font-size:.7rem;" title="Private — not shown publicly"></i>
+                                        <?php endif; ?>
+                                    </label>
+                                </div>
+                                <div class="form-text">Set by your administrator — contact them to update this.</div>
+                            <?php elseif ($field['field_type'] === 'textarea'): ?>
                                 <div class="form-outline">
                                     <textarea id="field_<?= (int)$field['id'] ?>"
                                               name="field_<?= (int)$field['id'] ?>"
@@ -228,7 +248,7 @@ require __DIR__ . '/templates/layout_header.php';
                                     </label>
                                 </div>
                             <?php endif; ?>
-                            <?php if ($isPrivateField): ?>
+                            <?php if ($isPrivateField && !$isAdminField): ?>
                                 <div class="form-text">Private — only you and admins can see this.</div>
                             <?php endif; ?>
                         </div>

@@ -26,13 +26,14 @@ $errors = [];
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     verifyCsrf();
 
-    $fieldName  = trim(strtolower(preg_replace('/\s+/', '_', $_POST['field_name']  ?? '')));
-    $fieldLabel = trim($_POST['field_label'] ?? '');
-    $fieldType  = $_POST['field_type']       ?? 'text';
-    $fieldIcon  = trim($_POST['field_icon']  ?? 'fas fa-tag') ?: 'fas fa-tag';
-    $sortOrder  = (int)($_POST['sort_order'] ?? 0);
-    $isActive   = isset($_POST['is_active']) ? 1 : 0;
-    $isPublic   = isset($_POST['is_public']) ? 1 : 0;
+    $fieldName      = trim(strtolower(preg_replace('/\s+/', '_', $_POST['field_name']  ?? '')));
+    $fieldLabel     = trim($_POST['field_label'] ?? '');
+    $fieldType      = $_POST['field_type']       ?? 'text';
+    $fieldIcon      = trim($_POST['field_icon']  ?? 'fas fa-tag') ?: 'fas fa-tag';
+    $editPermission = $_POST['edit_permission']  ?? 'user';
+    $sortOrder      = (int)($_POST['sort_order'] ?? 0);
+    $isActive       = isset($_POST['is_active']) ? 1 : 0;
+    $isPublic       = isset($_POST['is_public']) ? 1 : 0;
 
     if ($fieldName === '') {
         $errors[] = 'Machine name is required.';
@@ -44,6 +45,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     if (!in_array($fieldType, ['text', 'url', 'textarea', 'date'], true)) {
         $errors[] = 'Invalid field type.';
+    }
+
+    if (!in_array($editPermission, ['user', 'admin'], true)) {
+        $editPermission = 'user';
     }
 
     // Unique name check against other fields
@@ -59,9 +64,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         try {
             $pdo->prepare(
                 'UPDATE profile_fields
-                 SET field_name=?, field_label=?, field_type=?, field_icon=?, sort_order=?, is_active=?, is_public=?
+                 SET field_name=?, field_label=?, field_type=?, field_icon=?, edit_permission=?, sort_order=?, is_active=?, is_public=?
                  WHERE id=?'
-            )->execute([$fieldName, $fieldLabel, $fieldType, $fieldIcon, $sortOrder, $isActive, $isPublic, $fieldId]);
+            )->execute([$fieldName, $fieldLabel, $fieldType, $fieldIcon, $editPermission, $sortOrder, $isActive, $isPublic, $fieldId]);
 
             flash('success', 'Field updated.');
             redirect('admin/fields/edit.php?id=' . $fieldId);
@@ -73,17 +78,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     // Rebuild for re-render
     $field = array_merge($field, [
-        'field_name'  => $fieldName,  'field_label' => $fieldLabel,
-        'field_type'  => $fieldType,  'field_icon'  => $fieldIcon,
-        'sort_order'  => $sortOrder,  'is_active'   => $isActive,
-        'is_public'   => $isPublic,
+        'field_name'      => $fieldName,  'field_label' => $fieldLabel,
+        'field_type'      => $fieldType,  'field_icon'  => $fieldIcon,
+        'edit_permission' => $editPermission,
+        'sort_order'      => $sortOrder,  'is_active'   => $isActive,
+        'is_public'       => $isPublic,
     ]);
 }
 
 // Count how many users have a value for this field
-$usageCount = (int)$pdo->prepare(
-    "SELECT COUNT(*) FROM user_field_values WHERE field_id = ? AND field_value != ''"
-)->execute([$fieldId]) ? 0 : 0;
 $usageStmt = $pdo->prepare("SELECT COUNT(*) FROM user_field_values WHERE field_id = ? AND field_value != ''");
 $usageStmt->execute([$fieldId]);
 $usageCount = (int)$usageStmt->fetchColumn();
@@ -146,6 +149,14 @@ require_once __DIR__ . '/../layout_header.php';
                                 <option value="textarea" <?= $field['field_type'] === 'textarea' ? 'selected' : '' ?>>Textarea</option>
                                 <option value="date"     <?= $field['field_type'] === 'date'     ? 'selected' : '' ?>>Date</option>
                             </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Who Sets the Value?</label>
+                            <select name="edit_permission" class="form-select">
+                                <option value="user"  <?= $field['edit_permission'] === 'user'  ? 'selected' : '' ?>>Member (self-service)</option>
+                                <option value="admin" <?= $field['edit_permission'] === 'admin' ? 'selected' : '' ?>>Admin only</option>
+                            </select>
+                            <div class="form-text">Admin-only fields show read-only to the member.</div>
                         </div>
                         <div class="col-md-6">
                             <div class="form-outline">

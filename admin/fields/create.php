@@ -6,25 +6,27 @@ require_once __DIR__ . '/../auth_check.php';
 
 $errors = [];
 $old    = [
-    'field_name'  => '',
-    'field_label' => '',
-    'field_type'  => 'text',
-    'field_icon'  => 'fas fa-tag',
-    'sort_order'  => '0',
-    'is_active'   => '1',
-    'is_public'   => '1',
+    'field_name'      => '',
+    'field_label'     => '',
+    'field_type'      => 'text',
+    'field_icon'      => 'fas fa-tag',
+    'edit_permission' => 'user',
+    'sort_order'      => '0',
+    'is_active'       => '1',
+    'is_public'       => '1',
 ];
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     verifyCsrf();
 
-    $old['field_name']  = trim(strtolower(preg_replace('/\s+/', '_', $_POST['field_name']  ?? '')));
-    $old['field_label'] = trim($_POST['field_label'] ?? '');
-    $old['field_type']  = $_POST['field_type']       ?? 'text';
-    $old['field_icon']  = trim($_POST['field_icon']  ?? 'fas fa-tag');
-    $old['sort_order']  = (string)(int)($_POST['sort_order'] ?? 0);
-    $old['is_active']   = isset($_POST['is_active']) ? '1' : '0';
-    $old['is_public']   = isset($_POST['is_public']) ? '1' : '0';
+    $old['field_name']      = trim(strtolower(preg_replace('/\s+/', '_', $_POST['field_name']  ?? '')));
+    $old['field_label']     = trim($_POST['field_label'] ?? '');
+    $old['field_type']      = $_POST['field_type']       ?? 'text';
+    $old['field_icon']      = trim($_POST['field_icon']  ?? 'fas fa-tag');
+    $old['edit_permission'] = $_POST['edit_permission']  ?? 'user';
+    $old['sort_order']      = (string)(int)($_POST['sort_order'] ?? 0);
+    $old['is_active']       = isset($_POST['is_active']) ? '1' : '0';
+    $old['is_public']       = isset($_POST['is_public']) ? '1' : '0';
 
     if ($old['field_name'] === '') {
         $errors[] = 'Machine name is required.';
@@ -36,6 +38,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     if (!in_array($old['field_type'], ['text', 'url', 'textarea', 'date'], true)) {
         $errors[] = 'Invalid field type.';
+    }
+
+    if (!in_array($old['edit_permission'], ['user', 'admin'], true)) {
+        $old['edit_permission'] = 'user';
     }
 
     if ($old['field_icon'] === '') $old['field_icon'] = 'fas fa-tag';
@@ -51,11 +57,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (empty($errors)) {
         try {
             getDB()->prepare(
-                'INSERT INTO profile_fields (field_name, field_label, field_type, field_icon, sort_order, is_active, is_public)
-                 VALUES (?, ?, ?, ?, ?, ?, ?)'
+                'INSERT INTO profile_fields (field_name, field_label, field_type, field_icon, edit_permission, sort_order, is_active, is_public)
+                 VALUES (?, ?, ?, ?, ?, ?, ?, ?)'
             )->execute([
                 $old['field_name'], $old['field_label'], $old['field_type'],
-                $old['field_icon'], (int)$old['sort_order'], (int)$old['is_active'], (int)$old['is_public'],
+                $old['field_icon'], $old['edit_permission'],
+                (int)$old['sort_order'], (int)$old['is_active'], (int)$old['is_public'],
             ]);
 
             flash('success', 'Field "' . $old['field_label'] . '" created.');
@@ -118,6 +125,17 @@ require_once __DIR__ . '/../layout_header.php';
                                 <option value="textarea" <?= $old['field_type'] === 'textarea' ? 'selected' : '' ?>>Textarea (multiline)</option>
                                 <option value="date"     <?= $old['field_type'] === 'date'     ? 'selected' : '' ?>>Date (e.g. Date of Birth)</option>
                             </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Who Sets the Value?</label>
+                            <select name="edit_permission" class="form-select">
+                                <option value="user"  <?= $old['edit_permission'] === 'user'  ? 'selected' : '' ?>>Member (self-service)</option>
+                                <option value="admin" <?= $old['edit_permission'] === 'admin' ? 'selected' : '' ?>>Admin only</option>
+                            </select>
+                            <div class="form-text">
+                                "Admin only" is for company-controlled facts — Designation, Department,
+                                Office Phone, Office Address — the member sees the value but cannot change it.
+                            </div>
                         </div>
                         <div class="col-md-6">
                             <div class="form-outline">

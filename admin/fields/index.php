@@ -51,6 +51,9 @@ require_once __DIR__ . '/../layout_header.php';
                         <td><code class="small"><?= e($f['field_name']) ?></code></td>
                         <td>
                             <span class="badge bg-info-subtle text-info"><?= e($f['field_type']) ?></span>
+                            <?php if (($f['edit_permission'] ?? 'user') === 'admin'): ?>
+                                <span class="badge bg-primary-subtle text-primary"><i class="fas fa-shield-alt"></i> Admin-set</span>
+                            <?php endif; ?>
                             <?php if ((int)($f['is_public'] ?? 1) === 0): ?>
                                 <span class="badge bg-warning-subtle text-warning"><i class="fas fa-lock"></i> Private</span>
                             <?php endif; ?>
