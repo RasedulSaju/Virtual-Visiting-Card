@@ -422,3 +422,9 @@ function buildRobotsTxt(): string
 
     return implode("\n", $lines) . "\n";
 }
+
+// ── Profile display name (full name if set, else username) ───
+function displayName(array $user): string
+{
+    return trim($user['full_name'] ?? '') !== '' ? trim($user['full_name']) : $user['username'];
+}

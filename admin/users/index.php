@@ -102,7 +102,7 @@ $total = (int)$countStmt->fetchColumn();
 $pages = (int)ceil($total / $perPage);
 
 $listStmt = $pdo->prepare(
-    "SELECT id, username, email, role, can_edit_profile, account_status, created_at
+    "SELECT id, username, full_name, email, role, can_edit_profile, account_status, created_at
      FROM users $where ORDER BY created_at DESC LIMIT $perPage OFFSET $offset"
 );
 $listStmt->execute($params);
@@ -196,6 +196,9 @@ require_once __DIR__ . '/../layout_header.php';
                                class="fw-semibold text-decoration-none">
                                 <?= e($u['username']) ?>
                             </a>
+                            <?php if (!empty($u['full_name'])): ?>
+                                <div class="text-muted" style="font-size:.75rem;"><?= e($u['full_name']) ?></div>
+                            <?php endif; ?>
                         </td>
                         <td class="small text-muted"><?= e($u['email']) ?></td>
                         <td>

@@ -121,6 +121,7 @@ vvcard/
 |---|---|---|
 | `id` | INT UNSIGNED AI PK | |
 | `username` | VARCHAR(50) UNIQUE | URL slug — `domain.com/username` |
+| `full_name` | VARCHAR(150) NULL | Profile title if set, falls back to username via `displayName()` |
 | `email` | VARCHAR(150) UNIQUE | |
 | `password_hash` | VARCHAR(255) | bcrypt cost-12 |
 | `role` | ENUM('user','admin','superadmin') | |
@@ -152,9 +153,14 @@ vvcard/
 | `id` | INT UNSIGNED AI PK | |
 | `field_name` | VARCHAR(100) UNIQUE | machine key e.g. `twitter_handle` |
 | `field_label` | VARCHAR(150) | display name |
-| `field_type` | ENUM('text','url','textarea','date') | |
+| `field_type` | ENUM('text','url','textarea','date','select') | |
 | `field_icon` | VARCHAR(100) | Font Awesome class |
+| `field_options` | TEXT NULL | For `select` type — one option per line |
 | `edit_permission` | ENUM('user','admin') | `user` = self-service; `admin` = only admin sets it, member sees read-only |
+| `lock_after_set` | TINYINT(1) | Once member sets a value, it becomes read-only for them (admins unaffected) |
+| `is_repeatable` | TINYINT(1) | Allows multiple values for this field (e.g. two phone numbers) |
+| `group_key` | VARCHAR(50) NULL | Fields sharing this key repeat together as a set (e.g. Position + Company) |
+| `group_label` | VARCHAR(150) NULL | Heading shown above each repeated group instance |
 | `sort_order` | INT | display order on profiles |
 | `is_active` | TINYINT(1) | inactive = hidden from all profiles |
 | `is_public` | TINYINT(1) | private = owner + admins only |
@@ -165,7 +171,13 @@ vvcard/
 |---|---|---|
 | `user_id` | INT UNSIGNED FK | CASCADE DELETE |
 | `field_id` | INT UNSIGNED FK | CASCADE DELETE |
+| `instance` | INT UNSIGNED | Row index for repeatable/grouped fields — 0 for single-value fields |
 | `field_value` | TEXT | |
+
+Unique key is `(user_id, field_id, instance)` — this is what allows a single
+field to store multiple values per user (e.g. instance 0 = work phone,
+instance 1 = cell phone), and lets grouped fields align by instance number
+(e.g. Position[0] pairs with Company[0], Position[1] with Company[1]).
 
 ### `settings`
 Key/value store. Primary key is `skey`.

@@ -35,6 +35,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     verifyCsrf();
 
     $username         = trim($_POST['username']          ?? '');
+    $fullName         = trim($_POST['full_name']         ?? '');
     $email            = trim($_POST['email']             ?? '');
     $role             = $_POST['role']                   ?? 'user';
     $accountStatus    = $_POST['account_status']          ?? 'active';
@@ -110,15 +111,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             if ($password !== '') {
                 $hash = password_hash($password, PASSWORD_BCRYPT, ['cost' => 12]);
                 $pdo->prepare(
-                    'UPDATE users SET username=?, email=?, password_hash=?, role=?, account_status=?,
+                    'UPDATE users SET username=?, full_name=?, email=?, password_hash=?, role=?, account_status=?,
                      can_edit_profile=?, show_in_directory=?, bio=?, profile_image=?, meta_robots=? WHERE id=?'
-                )->execute([$username, $email, $hash, $role, $accountStatus,
+                )->execute([$username, $fullName ?: null, $email, $hash, $role, $accountStatus,
                     $canEdit, $showInDirectory, $bio, $profileImage, $metaRobots, $userId]);
             } else {
                 $pdo->prepare(
-                    'UPDATE users SET username=?, email=?, role=?, account_status=?,
+                    'UPDATE users SET username=?, full_name=?, email=?, role=?, account_status=?,
                      can_edit_profile=?, show_in_directory=?, bio=?, profile_image=?, meta_robots=? WHERE id=?'
-                )->execute([$username, $email, $role, $accountStatus,
+                )->execute([$username, $fullName ?: null, $email, $role, $accountStatus,
                     $canEdit, $showInDirectory, $bio, $profileImage, $metaRobots, $userId]);
             }
 
@@ -203,6 +204,14 @@ require_once __DIR__ . '/../layout_header.php';
                                        value="<?= e($user['username']) ?>" required>
                                 <label class="form-label" for="username">Username *</label>
                             </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-outline">
+                                <input type="text" id="full_name" name="full_name" class="form-control"
+                                       value="<?= e($user['full_name'] ?? '') ?>">
+                                <label class="form-label" for="full_name">Full Name</label>
+                            </div>
+                            <div class="form-text">Shown as profile title. Leave empty to show username.</div>
                         </div>
                         <div class="col-md-6">
                             <div class="form-outline">

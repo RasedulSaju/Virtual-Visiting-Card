@@ -63,26 +63,44 @@ try {
     $profileUser = $stmt->fetch();
 
     if ($profileUser) {
+        // Fetch field definitions
         $fStmt = $pdo->prepare(
-            'SELECT pf.id, pf.field_label, pf.field_type, pf.field_icon, pf.is_public,
-                    COALESCE(ufv.field_value, \'\') AS field_value
-             FROM   profile_fields pf
-             LEFT JOIN user_field_values ufv
-                    ON pf.id = ufv.field_id AND ufv.user_id = ?
-             WHERE  pf.is_active = 1
-             ORDER  BY pf.sort_order ASC'
+            'SELECT id, field_label, field_type, field_icon, field_options, is_public,
+                    is_repeatable, group_key, group_label, sort_order
+             FROM   profile_fields
+             WHERE  is_active = 1
+             ORDER  BY sort_order ASC'
         );
-        $fStmt->execute([$profileUser['id']]);
-        $profileFields = $fStmt->fetchAll();
+        $fStmt->execute();
+        $fieldDefs = $fStmt->fetchAll();
 
-        $pageTitle  = $profileUser['username'] . ' — ' . siteName();
+        // Fetch ALL values (all instances) for this user in one query
+        $vStmt = $pdo->prepare(
+            'SELECT field_id, instance, field_value FROM user_field_values
+             WHERE user_id = ? ORDER BY field_id ASC, instance ASC'
+        );
+        $vStmt->execute([$profileUser['id']]);
+        $valuesByField = [];
+        foreach ($vStmt->fetchAll() as $v) {
+            $valuesByField[(int)$v['field_id']][(int)$v['instance']] = $v['field_value'];
+        }
+
+        // Attach values array to each field definition
+        foreach ($fieldDefs as &$fd) {
+            $fd['values'] = $valuesByField[(int)$fd['id']] ?? [];
+        }
+        unset($fd);
+        $profileFields = $fieldDefs;
+
+        $displayName = displayName($profileUser);
+        $pageTitle  = $displayName . ' — ' . siteName();
         $metaRobots = resolveMetaRobots($profileUser['meta_robots'] ?? 'index,follow');
         $ogData = [
             'type'        => 'profile',
-            'title'       => $profileUser['username'] . ' — ' . siteName(),
+            'title'       => $displayName . ' — ' . siteName(),
             'description' => $profileUser['bio']
                 ? truncate(strip_tags((string)$profileUser['bio']), 160)
-                : $profileUser['username'] . ' on ' . siteName(),
+                : $displayName . ' on ' . siteName(),
             'image'       => avatarUrl($profileUser['profile_image']),
             'url'         => BASE_URL . $profileUser['username'],
         ];

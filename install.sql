@@ -28,6 +28,7 @@ DROP TABLE IF EXISTS `settings`;
 CREATE TABLE `users` (
   `id`                INT UNSIGNED                    NOT NULL AUTO_INCREMENT,
   `username`          VARCHAR(50)                     NOT NULL,
+  `full_name`         VARCHAR(150)                    NULL,
   `email`             VARCHAR(150)                    NOT NULL,
   `password_hash`     VARCHAR(255)                    NOT NULL,
   `role`              ENUM('user','admin','superadmin') NOT NULL DEFAULT 'user',
@@ -37,8 +38,8 @@ CREATE TABLE `users` (
   `show_in_directory` TINYINT(1)                      NOT NULL DEFAULT 1,
   `profile_image`     VARCHAR(255)                    NOT NULL DEFAULT 'default-avatar.png',
   `bio`               TEXT,
-  `reset_token`       VARCHAR(64)                         NULL DEFAULT NULL,
-  `reset_expires`     DATETIME                            NULL DEFAULT NULL,
+  `reset_token`       VARCHAR(64)                     NULL DEFAULT NULL,
+  `reset_expires`     DATETIME                        NULL DEFAULT NULL,
   `created_at`        DATETIME                        NOT NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`),
   UNIQUE KEY `uq_username` (`username`),
@@ -69,16 +70,21 @@ CREATE TABLE `pages` (
 --   Admin-defined custom fields that appear on every user profile.
 -- ────────────────────────────────────────────────────────────
 CREATE TABLE `profile_fields` (
-  `id`          INT UNSIGNED                          NOT NULL AUTO_INCREMENT,
-  `field_name`  VARCHAR(100)                          NOT NULL,
-  `field_label` VARCHAR(150)                          NOT NULL,
-  `field_type`  ENUM('text','email','url','textarea','date','time','number')  NOT NULL DEFAULT 'text',
-  `field_icon`  VARCHAR(100)                          NOT NULL DEFAULT 'fas fa-tag',
-  `edit_permission` ENUM('user','admin')              NOT NULL DEFAULT 'user',
-  `sort_order`  INT                                   NOT NULL DEFAULT 0,
-  `is_active`   TINYINT(1)                            NOT NULL DEFAULT 1,
-  `is_public`   TINYINT(1)                            NOT NULL DEFAULT 1,
-  `created_at`  DATETIME                              NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `id`              INT UNSIGNED                                  NOT NULL AUTO_INCREMENT,
+  `field_name`      VARCHAR(100)                                  NOT NULL,
+  `field_label`     VARCHAR(150)                                  NOT NULL,
+  `field_type`      ENUM('text','url','textarea','date','select') NOT NULL DEFAULT 'text',
+  `field_icon`      VARCHAR(100)                                  NOT NULL DEFAULT 'fas fa-tag',
+  `field_options`   TEXT                                          NULL DEFAULT NULL,
+  `edit_permission` ENUM('user','admin')                          NOT NULL DEFAULT 'user',
+  `lock_after_set`  TINYINT(1)                                    NOT NULL DEFAULT 0,
+  `is_repeatable`   TINYINT(1)                                    NOT NULL DEFAULT 0,
+  `group_key`       VARCHAR(50)                                   NULL DEFAULT NULL,
+  `group_label`     VARCHAR(150)                                  NULL DEFAULT NULL,
+  `sort_order`      INT                                           NOT NULL DEFAULT 0,
+  `is_active`       TINYINT(1)                                    NOT NULL DEFAULT 1,
+  `is_public`       TINYINT(1)                                    NOT NULL DEFAULT 1,
+  `created_at`      DATETIME                                      NOT NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`),
   UNIQUE KEY `uq_field_name` (`field_name`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
@@ -86,14 +92,18 @@ CREATE TABLE `profile_fields` (
 -- ────────────────────────────────────────────────────────────
 -- TABLE: user_field_values
 --   Stores each user's answer for each profile field.
+--   `instance` allows multiple values per field (repeatable fields,
+--   and repeating groups — e.g. instance 0 pairs Position[0]+Company[0],
+--   instance 1 pairs Position[1]+Company[1], etc.)
 -- ────────────────────────────────────────────────────────────
 CREATE TABLE `user_field_values` (
-  `id`          INT UNSIGNED NOT NULL AUTO_INCREMENT,
-  `user_id`     INT UNSIGNED NOT NULL,
-  `field_id`    INT UNSIGNED NOT NULL,
+  `id`          INT UNSIGNED          NOT NULL AUTO_INCREMENT,
+  `user_id`     INT UNSIGNED          NOT NULL,
+  `field_id`    INT UNSIGNED          NOT NULL,
+  `instance`    INT UNSIGNED          NOT NULL DEFAULT 0,
   `field_value` TEXT,
   PRIMARY KEY (`id`),
-  UNIQUE KEY `uq_user_field` (`user_id`, `field_id`),
+  UNIQUE KEY `uq_user_field_instance` (`user_id`, `field_id`, `instance`),
   CONSTRAINT `fk_ufv_user`  FOREIGN KEY (`user_id`)
       REFERENCES `users`(`id`)          ON DELETE CASCADE ON UPDATE CASCADE,
   CONSTRAINT `fk_ufv_field` FOREIGN KEY (`field_id`)
@@ -137,9 +147,9 @@ SET FOREIGN_KEY_CHECKS = 1;
 -- ============================================================
 
 -- Initial Users
-INSERT INTO `users` (`id`, `username`, `email`, `password_hash`, `role`, `account_status`, `can_edit_profile`, `meta_robots`, `show_in_directory`, `profile_image`, `bio`, `reset_token`, `reset_expires`, `created_at`) VALUES
-(1, 'Rasedul', 'me@rasedulsaju.com', '$2y$12$cBKitkQLdmQHKmySesqoBOGv74gXVFbZM4Capmp2ozGCfQ8HMc9RO', 'superadmin', 'active', 1, 'index,follow', 1, 'default-avatar.png', NULL, NULL, NULL, '2026-06-20 18:25:00'),
-(2, 'RasedulSaju', 'rasedulsaju@gmail.com', '$2y$12$cBKitkQLdmQHKmySesqoBOGv74gXVFbZM4Capmp2ozGCfQ8HMc9RO', 'admin', 'active', 1, 'index,follow', 1, 'default-avatar.png', NULL, NULL, NULL, '2026-06-20 18:25:08');
+INSERT INTO `users` (`id`, `username`, `email`, `password_hash`, `role`, `account_status`, `can_edit_profile`, `meta_robots`, `show_in_directory`, `profile_image`, `created_at`) VALUES
+(1, 'Rasedul', 'me@rasedulsaju.com', '$2y$12$cBKitkQLdmQHKmySesqoBOGv74gXVFbZM4Capmp2ozGCfQ8HMc9RO', 'superadmin', 'active', 1, 'noindex,nofollow', 0, 'default-avatar.png', '2026-06-20 18:25:00'),
+(2, 'RasedulSaju', 'rasedulsaju@gmail.com', '$2y$12$cBKitkQLdmQHKmySesqoBOGv74gXVFbZM4Capmp2ozGCfQ8HMc9RO', 'admin', 'active', 1, 'noindex,nofollow', 0, 'default-avatar.png', '2026-06-20 18:25:08');
 
 -- Sample page (visible in navigation)
 INSERT INTO `pages` (`slug`, `title`, `content`, `show_in_nav`, `nav_order`) VALUES

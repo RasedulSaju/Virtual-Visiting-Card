@@ -57,6 +57,18 @@ require_once __DIR__ . '/../layout_header.php';
                             <?php if ((int)($f['is_public'] ?? 1) === 0): ?>
                                 <span class="badge bg-warning-subtle text-warning"><i class="fas fa-lock"></i> Private</span>
                             <?php endif; ?>
+                            <?php if (!empty($f['group_key'])): ?>
+                                <span class="badge bg-purple-subtle" style="background:#f3e8ff;color:#7c3aed;">
+                                    <i class="fas fa-layer-group"></i> Group: <?= e($f['group_key']) ?>
+                                </span>
+                            <?php elseif ((int)($f['is_repeatable'] ?? 0) === 1): ?>
+                                <span class="badge bg-purple-subtle" style="background:#f3e8ff;color:#7c3aed;">
+                                    <i class="fas fa-clone"></i> Multiple
+                                </span>
+                            <?php endif; ?>
+                            <?php if ((int)($f['lock_after_set'] ?? 0) === 1): ?>
+                                <span class="badge bg-dark-subtle text-dark"><i class="fas fa-lock"></i> Lock once set</span>
+                            <?php endif; ?>
                         </td>
                         <td><code class="small"><?= e($f['field_icon']) ?></code></td>
                         <td class="text-muted small"><?= (int)$f['sort_order'] ?></td>

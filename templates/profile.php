@@ -1,6 +1,6 @@
 <?php
 /** @var array $profileUser   — set by index.php router */
-/** @var array $profileFields — set by index.php router */
+/** @var array $profileFields — set by index.php router (each has 'values' => [instance => value]) */
 if (empty($profileUser)) {
     http_response_code(404);
     require __DIR__ . '/404.php';
@@ -12,21 +12,60 @@ $isSelf        = isLoggedIn() && (int)$_SESSION['user_id'] === (int)$profileUser
 $viewerIsAdmin = isAdmin();
 $canEdit       = $isSelf && ($viewerIsAdmin || (bool)$profileUser['can_edit_profile']);
 $isResigned    = ($profileUser['account_status'] ?? 'active') === 'resigned';
+$displayTitle  = displayName($profileUser);
 $roleLabel     = match ($profileUser['role'] ?? 'user') {
-    'superadmin' => 'Administrator',
-    'admin'      => 'Administrator',
-    default      => 'Member',
+    'superadmin', 'admin' => 'Administrator',
+    default                => 'Member',
 };
 $roleBadgeCls  = in_array($profileUser['role'] ?? 'user', ['admin', 'superadmin'], true) ? 'bg-danger' : 'bg-primary';
 
-// Visible fields: public fields for everyone, private fields only for owner/admin
-$visibleFields = array_filter($profileFields, function ($f) use ($isSelf, $viewerIsAdmin) {
-    if (trim($f['field_value']) === '') return false;
-    if ((int)($f['is_public'] ?? 1) === 0) {
-        return $isSelf || $viewerIsAdmin;
+// Only fields the viewer is allowed to see
+$canSeeField = fn(array $f) => (int)($f['is_public'] ?? 1) === 1 || $isSelf || $viewerIsAdmin;
+
+// Split into standalone fields and grouped-field sets
+$standaloneFields = [];
+$groups           = []; // group_key => ['label' => ..., 'fields' => [...]]
+
+foreach ($profileFields as $f) {
+    if (!$canSeeField($f)) continue;
+
+    // Drop fields with no value at all (any instance)
+    $hasAnyValue = false;
+    foreach ($f['values'] as $v) {
+        if (trim((string)$v) !== '') { $hasAnyValue = true; break; }
     }
-    return true;
-});
+    if (!$hasAnyValue) continue;
+
+    if (!empty($f['group_key'])) {
+        $gk = $f['group_key'];
+        if (!isset($groups[$gk])) {
+            $groups[$gk] = ['label' => $f['group_label'] ?: ucfirst(str_replace('_', ' ', $gk)), 'fields' => []];
+        }
+        $groups[$gk]['fields'][] = $f;
+    } else {
+        $standaloneFields[] = $f;
+    }
+}
+
+if (!function_exists('_renderFieldValue')) {
+function _renderFieldValue(array $field, string $val): string
+{
+    $val = trim($val);
+    if ($val === '') return '';
+    switch ($field['field_type']) {
+        case 'url':
+            return '<a href="' . e($val) . '" target="_blank" rel="noopener noreferrer" class="text-decoration-none">'
+                 . truncate(e($val), 40) . ' <i class="fas fa-external-link-alt ms-1 small text-muted"></i></a>';
+        case 'textarea':
+            return '<span class="text-wrap">' . nl2br(e($val)) . '</span>';
+        case 'date':
+            $ts = strtotime($val);
+            return $ts ? e(date('F j, Y', $ts)) : e($val);
+        default:
+            return e($val);
+    }
+}
+}
 ?>
 
 <?php if ($isResigned): ?>
@@ -49,9 +88,9 @@ $visibleFields = array_filter($profileFields, function ($f) use ($isSelf, $viewe
                     <img src="<?= avatarUrl($profileUser['profile_image']) ?>"
                          class="profile-avatar rounded-circle border-4 border-white"
                          width="100" height="100"
-                         style="object-fit:cover;" alt="<?= e($profileUser['username']) ?>">
+                         style="object-fit:cover;" alt="<?= e($displayTitle) ?>">
                 </div>
-                <h2 class="h5 fw-bold mb-0 mt-2"><?= e($profileUser['username']) ?></h2>
+                <h2 class="h5 fw-bold mb-0 mt-2"><?= e($displayTitle) ?></h2>
                 <span class="badge <?= $roleBadgeCls ?> mb-2"><?= $roleLabel ?></span>
                 <?php if ($isResigned): ?>
                     <span class="badge bg-secondary mb-2 ms-1">Resigned</span>
@@ -89,7 +128,7 @@ $visibleFields = array_filter($profileFields, function ($f) use ($isSelf, $viewe
                     <p class="text-muted mb-0">Profile details are hidden — this person is no longer active.</p>
                 </div>
             </div>
-        <?php elseif (empty($visibleFields)): ?>
+        <?php elseif (empty($standaloneFields) && empty($groups)): ?>
             <div class="card border-0 shadow-sm">
                 <div class="card-body text-center py-5">
                     <i class="fas fa-id-badge fa-3x text-muted mb-3"></i>
@@ -102,50 +141,88 @@ $visibleFields = array_filter($profileFields, function ($f) use ($isSelf, $viewe
                 </div>
             </div>
         <?php else: ?>
+
+            <!-- Grouped repeating sets (e.g. Position + Company pairs) -->
+            <?php foreach ($groups as $gk => $group):
+                // Collect all instance indices used across the group's fields
+                $instances = [];
+                foreach ($group['fields'] as $gf) {
+                    foreach (array_keys($gf['values']) as $inst) {
+                        $val = trim((string)$gf['values'][$inst]);
+                        if ($val !== '') $instances[$inst] = true;
+                    }
+                }
+                ksort($instances);
+                if (empty($instances)) continue;
+            ?>
+            <div class="card border-0 shadow-sm mb-3"
+                 data-mdb-toggle="animation" data-mdb-animation="fade-in-up"
+                 data-mdb-animation-start="onScroll" data-mdb-animation-on-scroll="once">
+                <div class="card-header bg-transparent border-bottom fw-semibold p-4 pb-2">
+                    <i class="fas fa-layer-group me-2 text-primary"></i><?= e($group['label']) ?>
+                </div>
+                <div class="card-body p-4">
+                    <?php $rowNum = 0; foreach (array_keys($instances) as $inst): $rowNum++; ?>
+                    <div class="<?= $rowNum > 1 ? 'border-top pt-3 mt-3' : '' ?>">
+                        <dl class="row g-2 mb-0">
+                            <?php foreach ($group['fields'] as $gf):
+                                $val = trim((string)($gf['values'][$inst] ?? ''));
+                                if ($val === '') continue;
+                            ?>
+                            <div class="col-sm-6">
+                                <dt class="text-muted small fw-normal mb-1">
+                                    <i class="<?= e($gf['field_icon']) ?> me-1"></i><?= e($gf['field_label']) ?>
+                                </dt>
+                                <dd class="fw-semibold mb-0 text-break"><?= _renderFieldValue($gf, $val) ?></dd>
+                            </div>
+                            <?php endforeach; ?>
+                        </dl>
+                    </div>
+                    <?php endforeach; ?>
+                </div>
+            </div>
+            <?php endforeach; ?>
+
+            <!-- Standalone fields (single or repeatable) -->
+            <?php if ($standaloneFields): ?>
             <div class="card border-0 shadow-sm">
                 <div class="card-header bg-transparent border-bottom fw-semibold p-4 pb-2">
                     <i class="fas fa-address-card me-2 text-primary"></i>Details
                 </div>
                 <div class="card-body p-4">
                     <dl class="profile-fields row g-3 mb-0">
-                        <?php foreach ($visibleFields as $i => $field):
-                            $val      = e($field['field_value']);
-                            $isPriv   = (int)($field['is_public'] ?? 1) === 0;
-                            $delay    = ($i % 4) * 100; // stagger 0, 100, 200, 300ms
+                        <?php $i = 0; foreach ($standaloneFields as $field):
+                            $isPriv = (int)($field['is_public'] ?? 1) === 0;
+                            $delay  = ($i++ % 4) * 100;
+                            $vals   = array_filter($field['values'], fn($v) => trim((string)$v) !== '');
+                            ksort($vals);
+                            if (empty($vals)) continue;
                         ?>
                         <div class="col-sm-6 col-xl-4"
-                             data-mdb-toggle="animation"
-                             data-mdb-animation="fade-in-up"
-                             data-mdb-animation-start="onScroll"
-                             data-mdb-animation-on-scroll="once"
-                             data-mdb-animation-duration="500"
-                             data-mdb-animation-delay="<?= $delay ?>">
+                             data-mdb-toggle="animation" data-mdb-animation="fade-in-up"
+                             data-mdb-animation-start="onScroll" data-mdb-animation-on-scroll="once"
+                             data-mdb-animation-duration="500" data-mdb-animation-delay="<?= $delay ?>">
                             <dt class="text-muted small fw-normal mb-1">
                                 <i class="<?= e($field['field_icon']) ?> me-1"></i><?= e($field['field_label']) ?>
                                 <?php if ($isPriv): ?>
                                     <i class="fas fa-lock ms-1 text-warning" title="Private — only visible to you and admins" style="font-size:.7rem;"></i>
                                 <?php endif; ?>
                             </dt>
-                            <dd class="fw-semibold mb-0 text-break">
-                                <?php if ($field['field_type'] === 'url'): ?>
-                                    <a href="<?= $val ?>" target="_blank" rel="noopener noreferrer"
-                                       class="text-decoration-none">
-                                        <?= truncate($val, 40) ?>
-                                        <i class="fas fa-external-link-alt ms-1 small text-muted"></i>
-                                    </a>
-                                <?php elseif ($field['field_type'] === 'textarea'): ?>
-                                    <span class="text-wrap"><?= nl2br($val) ?></span>
-                                <?php elseif ($field['field_type'] === 'date'): ?>
-                                    <?= e(date('F j, Y', strtotime($field['field_value']))) ?>
-                                <?php else: ?>
-                                    <?= $val ?>
-                                <?php endif; ?>
-                            </dd>
+                            <?php if (count($vals) > 1): ?>
+                                <!-- Repeatable field — multiple values -->
+                                <?php foreach ($vals as $v): ?>
+                                <dd class="fw-semibold mb-1 text-break"><?= _renderFieldValue($field, $v) ?></dd>
+                                <?php endforeach; ?>
+                            <?php else: ?>
+                                <dd class="fw-semibold mb-0 text-break"><?= _renderFieldValue($field, reset($vals)) ?></dd>
+                            <?php endif; ?>
                         </div>
                         <?php endforeach; ?>
                     </dl>
                 </div>
             </div>
+            <?php endif; ?>
+
         <?php endif; ?>
     </div>
 </div>

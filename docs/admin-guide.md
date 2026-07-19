@@ -72,7 +72,81 @@ This is different from SEO noindex — this only hides them from your own member
 5. See live preview on the right as you make changes
 6. Click **Save Navigation**
 
-#### Managing Profile Fields
+#### Adding a Dropdown Field (e.g. Blood Group)
+1. **Admin → Profile Fields → Create Field**
+2. Type: `Dropdown (fixed choices)`
+3. **Dropdown Options** box appears — enter one option per line:
+   ```
+   A+
+   A-
+   B+
+   B-
+   O+
+   O-
+   AB+
+   AB-
+   ```
+4. Save → members now pick from this exact list on their Edit Profile page,
+   no free-typing
+
+#### Allowing Multiple Values (e.g. two phone numbers)
+Some people have more than one of something — a work phone and a cell phone,
+or several email addresses.
+
+1. **Admin → Profile Fields → Create Field**
+2. Fill in as normal (e.g. `Phone Number`, type Text)
+3. Under **Multiple Values**, toggle **Allow multiple values → ON**
+4. Save
+
+On their Edit Profile page, the member now sees an **+ Add** button next to
+that field — they can add as many values as needed. All of them display on
+their public profile, stacked under one label.
+
+#### Repeating Groups (e.g. multiple Position + Company pairs)
+For people who hold more than one position — like a Director at one company
+and Managing Partner at another — group two or more fields so they repeat
+**together** as a set.
+
+1. Create the fields normally: `Position` (Text) and `Company` (Text)
+2. On **both** fields, scroll to **Group with other fields**:
+   - **Group Key**: `employment` (same value on both fields — this links them)
+   - **Group Heading**: `Employment` (shown above each repeated set)
+3. Save both fields
+
+On Edit Profile, the member now sees an "Employment" card with **Position**
+and **Company** side by side, and an **+ Add** button to add another
+Position + Company pair. Their public profile shows each pair as its own
+row — exactly like the multi-company example you referenced.
+
+> **Note:** A field can be either "Allow multiple values" OR part of a
+> group — not both. Grouped fields always repeat together as a set.
+
+#### Lock a Field Once Set (e.g. Date of Birth)
+Some facts shouldn't change once entered — Date of Birth, Date of Joining,
+Employee ID.
+
+1. **Admin → Profile Fields → Create/Edit Field**
+2. Toggle **Lock once set → ON**
+3. Save
+
+The first time the member fills this in and saves, it becomes **permanently
+read-only for them** — shown greyed out with a lock icon on future visits.
+**Admins are never affected by this lock** — you can always go to
+**Admin → Users → Edit** and change it via the Company Details section
+(if you also set it to Admin-only) or directly in the database if needed.
+
+#### Profile Title: Full Name vs Username
+By default, a profile's title shows the **username**. If you (or the member,
+if self-editing) fill in a **Full Name**, that's shown instead everywhere —
+profile title, browser tab, members directory, Open Graph previews.
+
+- **Admin → Users → Edit** → **Full Name** field, or
+- The member sets it themselves on their **Edit Profile** page
+
+Leave it empty and the username is used as a clean fallback — nothing
+breaks either way.
+
+
 Fields appear on every user's profile. By default, users fill them in themselves.
 Some facts, though, should be **fixed by the company/admin** — Designation,
 Department, Office Phone, PABX Extension, Fax, Office Address — since these

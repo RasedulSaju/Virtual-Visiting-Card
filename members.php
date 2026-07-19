@@ -23,7 +23,7 @@ $total = (int)$countStmt->fetchColumn();
 $pages = (int)ceil($total / $perPage);
 
 $listStmt = $pdo->prepare(
-    "SELECT id, username, profile_image, bio, created_at
+    "SELECT id, username, full_name, profile_image, bio, created_at
      FROM users $where
      ORDER BY created_at DESC
      LIMIT $perPage OFFSET $offset"
@@ -71,7 +71,7 @@ require __DIR__ . '/templates/layout_header.php';
     </div>
 <?php else: ?>
     <div class="row g-3 mb-4">
-        <?php foreach ($members as $m): ?>
+        <?php foreach ($members as $m): $mName = displayName($m); ?>
         <div class="col-6 col-md-4 col-lg-3">
             <a href="<?= BASE_URL . e($m['username']) ?>"
                class="text-decoration-none">
@@ -83,9 +83,9 @@ require __DIR__ . '/templates/layout_header.php';
                                  class="rounded-circle border-3 border-white"
                                  width="72" height="72"
                                  style="object-fit:cover;border:3px solid white;"
-                                 alt="<?= e($m['username']) ?>">
+                                 alt="<?= e($mName) ?>">
                         </div>
-                        <h6 class="fw-bold mb-1 mt-1 text-dark"><?= e($m['username']) ?></h6>
+                        <h6 class="fw-bold mb-1 mt-1 text-dark"><?= e($mName) ?></h6>
                         <?php if ($m['bio']): ?>
                             <p class="text-muted small mb-0" style="
                                 display:-webkit-box;-webkit-line-clamp:2;

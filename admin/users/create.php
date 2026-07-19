@@ -8,7 +8,7 @@ $validRoles = isSuperAdmin() ? ['user', 'admin', 'superadmin'] : ['user', 'admin
 
 $errors = [];
 $old    = [
-    'username' => '', 'email' => '', 'role' => 'user',
+    'username' => '', 'full_name' => '', 'email' => '', 'role' => 'user',
     'can_edit_profile' => '1', 'show_in_directory' => '1',
     'account_status' => 'active', 'bio' => '',
 ];
@@ -17,6 +17,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     verifyCsrf();
 
     $old['username']          = trim($_POST['username']         ?? '');
+    $old['full_name']         = trim($_POST['full_name']        ?? '');
     $old['email']             = trim($_POST['email']            ?? '');
     $old['role']              = $_POST['role']                  ?? 'user';
     $old['can_edit_profile']  = isset($_POST['can_edit_profile']) ? '1' : '0';
@@ -82,12 +83,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $hash = password_hash($password, PASSWORD_BCRYPT, ['cost' => 12]);
             $stmt = $pdo->prepare(
                 'INSERT INTO users
-                    (username, email, password_hash, role, account_status,
+                    (username, full_name, email, password_hash, role, account_status,
                      can_edit_profile, show_in_directory, bio, profile_image)
-                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)'
+                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)'
             );
             $stmt->execute([
-                $old['username'], $old['email'], $hash,
+                $old['username'], $old['full_name'] ?: null, $old['email'], $hash,
                 $old['role'], $old['account_status'],
                 (int)$old['can_edit_profile'], (int)$old['show_in_directory'],
                 $old['bio'], $profileImage,
@@ -143,6 +144,14 @@ require_once __DIR__ . '/../layout_header.php';
                                        value="<?= e($old['username']) ?>" required>
                                 <label class="form-label" for="username">Username *</label>
                             </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-outline">
+                                <input type="text" id="full_name" name="full_name" class="form-control"
+                                       value="<?= e($old['full_name']) ?>">
+                                <label class="form-label" for="full_name">Full Name</label>
+                            </div>
+                            <div class="form-text">Shown as the profile title instead of username. Optional.</div>
                         </div>
                         <div class="col-md-6">
                             <div class="form-outline">
