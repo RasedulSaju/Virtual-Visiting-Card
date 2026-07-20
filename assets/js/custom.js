@@ -19,6 +19,40 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
+    /* ── Browser autofill detection (fallback for :-webkit-autofill) ──
+       Some Chrome versions don't reliably keep the floating label in
+       sync with autofilled values via CSS alone. This listens for the
+       'onAutoFillStart' animation (defined in custom.css) that fires
+       the moment Chrome autofills a field, and permanently marks it
+       with .is-autofilled so the label floats regardless of
+       :placeholder-shown's actual state. Runs once per field, safe
+       to fire multiple times (idempotent). */
+    document.addEventListener('animationstart', (e) => {
+        if (e.animationName === 'onAutoFillStart' && e.target.matches('.form-outline > .form-control')) {
+            e.target.classList.add('is-autofilled');
+        }
+    });
+
+    /* ── Extra safety net: re-check all fields shortly after load ───
+       Covers any autofill that happens before our listeners attach,
+       or browsers where the animation trick doesn't fire at all —
+       directly checks the input's current value against what the
+       label's floated state should be. */
+    setTimeout(() => {
+        document.querySelectorAll('.form-outline > .form-control').forEach(el => {
+            if (el.value && el.value.trim() !== '') {
+                el.classList.add('is-autofilled');
+            }
+        });
+    }, 300);
+
+    // Keep the safety-net class in sync as the user types or clears a field
+    document.querySelectorAll('.form-outline > .form-control').forEach(el => {
+        el.addEventListener('input', () => {
+            el.classList.toggle('is-autofilled', el.value.trim() !== '');
+        });
+    });
+
     /* ── Auto-dismiss alerts after 5s ───────────────────────── */
     document.querySelectorAll('.alert.alert-success, .alert.alert-info').forEach(alert => {
         setTimeout(() => {

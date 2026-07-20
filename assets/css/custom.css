@@ -226,6 +226,73 @@ main.container { flex: 1; }
     display: none !important;
 }
 
+/* ── Browser Autofill Fix ───────────────────────────────────────
+   Chrome/Edge/Safari autofill (very common on Username/Email/
+   Password fields) doesn't reliably keep :placeholder-shown in
+   sync with the field's actual value, so the floating label can
+   get stuck in its large "empty" position even though the field
+   is visibly filled in by the browser. Detecting the special
+   :-webkit-autofill pseudo-class and forcing the label to float
+   fixes this regardless of :placeholder-shown's state. Also resets
+   the yellow autofill background to match our theme. */
+.form-outline > .form-control:-webkit-autofill,
+.form-outline > .form-control:-webkit-autofill:hover,
+.form-outline > .form-control:-webkit-autofill:focus {
+    -webkit-text-fill-color: var(--cms-body) !important;
+    -webkit-box-shadow: 0 0 0 1000px var(--cms-surface) inset !important;
+    box-shadow: 0 0 0 1000px var(--cms-surface) inset !important;
+    caret-color: var(--cms-body);
+    transition: background-color 9999s ease-in-out 0s;
+    padding-top: 1.625rem !important;
+    padding-bottom: .625rem !important;
+}
+
+.form-outline > .form-control:-webkit-autofill ~ .form-label,
+.form-outline > .form-control:-webkit-autofill:hover ~ .form-label,
+.form-outline > .form-control:-webkit-autofill:focus ~ .form-label {
+    opacity: .85;
+    transform: scale(.82) translateY(-.55rem) translateX(.15rem) !important;
+    color: var(--cms-primary) !important;
+    background: var(--cms-surface) !important;
+    padding-left: .35rem !important;
+    padding-right: .35rem !important;
+    max-width: calc(133% - 1.5rem);
+}
+
+/* Firefox autofill uses a different signal — :autofill (no vendor prefix needed in modern Firefox) */
+.form-outline > .form-control:autofill ~ .form-label {
+    opacity: .85;
+    transform: scale(.82) translateY(-.55rem) translateX(.15rem) !important;
+    color: var(--cms-primary) !important;
+    background: var(--cms-surface) !important;
+    padding-left: .35rem !important;
+    padding-right: .35rem !important;
+    max-width: calc(133% - 1.5rem);
+}
+
+/* JS-detectable autofill hook — see custom.js. Some Chrome versions
+   don't live-update :-webkit-autofill in all situations, so this
+   animation fires an 'animationstart' event JS can listen for as a
+   fully reliable fallback (adds .is-autofilled, handled below). */
+@keyframes onAutoFillStart { from {} to {} }
+.form-outline > .form-control:-webkit-autofill {
+    animation-name: onAutoFillStart;
+    animation-duration: .001s;
+}
+.form-outline > .form-control.is-autofilled ~ .form-label {
+    opacity: .85 !important;
+    transform: scale(.82) translateY(-.55rem) translateX(.15rem) !important;
+    color: var(--cms-primary) !important;
+    background: var(--cms-surface) !important;
+    padding-left: .35rem !important;
+    padding-right: .35rem !important;
+    max-width: calc(133% - 1.5rem);
+}
+.form-outline > .form-control.is-autofilled {
+    padding-top: 1.625rem !important;
+    padding-bottom: .625rem !important;
+}
+
 /* ── Buttons ─────────────────────────────────────────────────── */
 .btn-primary {
     background: var(--cms-primary) !important;
