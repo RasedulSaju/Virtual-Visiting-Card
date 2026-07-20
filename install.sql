@@ -159,17 +159,24 @@ INSERT INTO `pages` (`slug`, `title`, `content`, `show_in_nav`, `nav_order`) VAL
 
 -- Default profile fields
 INSERT INTO `profile_fields`
-  (`field_name`, `field_label`, `field_type`, `field_icon`, `sort_order`) VALUES
-  ('website',   'Website',        'url',      'fas fa-globe',          1),
-  ('twitter',   'Twitter',        'text',     'fab fa-twitter',        2),
-  ('linkedin',  'LinkedIn',       'url',      'fab fa-linkedin-in',    3),
-  ('github',    'GitHub',         'url',      'fab fa-github',         4),
-  ('location',  'Location',       'text',     'fas fa-map-marker-alt', 5);
+  (`field_name`, `field_label`, `field_type`, `field_icon`, `field_options`, `sort_order`) VALUES
+  ('blood',  'Blood Group',  'select',  'fas fa-droplet',       'A+ve (A Positive)
+A-ve (A Negative)
+AB+ve (AB Positivo)
+AB-ve (AB Negative)
+B+ve (B Positive)
+B-ve (B Negative)
+O+ve (O Positive)
+O-ve (O Negative)', 1),
+  ('website',  'Website',    'url',     'fas fa-globe',          NULL, 2),
+  ('twitter',  'Twitter',    'text',    'fab fa-twitter',        NULL, 3),
+  ('linkedin', 'LinkedIn',   'url',     'fab fa-linkedin-in',    NULL, 4),
+  ('location', 'Location',   'text',    'fas fa-map-marker-alt', NULL, 5);
 
 -- Registration / general settings
 INSERT INTO `settings` (`skey`, `value`) VALUES
   ('registration_open', '1'),
-  ('upload_limit_mb',   '2'),
+  ('upload_limit_mb',   '4'),
 
   -- SMTP settings
   ('smtp_host',       ''),
