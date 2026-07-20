@@ -22,12 +22,9 @@ document.addEventListener('DOMContentLoaded', () => {
     /* ── Auto-dismiss alerts after 5s ───────────────────────── */
     document.querySelectorAll('.alert.alert-success, .alert.alert-info').forEach(alert => {
         setTimeout(() => {
-            const bsAlert = typeof bootstrap !== 'undefined'
-                ? new bootstrap.Alert(alert) : null;
-            if (bsAlert) bsAlert.close();
-            else alert.style.transition = 'opacity .4s';
-               alert.style.opacity = '0';
-               setTimeout(() => alert.remove(), 400);
+            alert.style.transition = 'opacity .4s';
+            alert.style.opacity = '0';
+            setTimeout(() => alert.remove(), 400);
         }, 5000);
     });
 

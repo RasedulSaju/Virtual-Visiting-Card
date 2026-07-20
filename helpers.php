@@ -22,6 +22,17 @@ function e(string $s): string
     return htmlspecialchars($s, ENT_QUOTES | ENT_HTML5, 'UTF-8');
 }
 
+// ── Cache-busting asset URLs ───────────────────────────────────
+// Appends the file's last-modified timestamp as a ?v= query string,
+// so browsers automatically fetch a fresh copy whenever the file
+// changes on the server — no manual hard-refresh needed after updates.
+function assetUrl(string $relativePath): string
+{
+    $fsPath  = rtrim(__DIR__, '/') . '/' . ltrim($relativePath, '/');
+    $version = file_exists($fsPath) ? filemtime($fsPath) : time();
+    return BASE_URL . ltrim($relativePath, '/') . '?v=' . $version;
+}
+
 // ── Flash messages ───────────────────────────────────────────
 function flash(string $type, string $msg): void
 {

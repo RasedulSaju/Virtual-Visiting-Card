@@ -364,14 +364,14 @@ require_once __DIR__ . '/../layout_header.php';
                         <div class="col-md-4">
                             <div class="form-outline">
                                 <input type="number" id="smtp_port" name="smtp_port" class="form-control"
-                                       value="<?= e($smtp['port']) ?>">
+                                       value="<?= e($smtp['port']) ?>" placeholder=" ">
                                 <label class="form-label" for="smtp_port">Port</label>
                             </div>
                         </div>
                         <div class="col-md-6">
                             <div class="form-outline">
                                 <input type="text" id="smtp_username" name="smtp_username" class="form-control"
-                                       value="<?= e($smtp['username']) ?>" autocomplete="off">
+                                       value="<?= e($smtp['username']) ?>" autocomplete="off" placeholder=" ">
                                 <label class="form-label" for="smtp_username">Username</label>
                             </div>
                         </div>

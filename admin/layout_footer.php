@@ -16,7 +16,7 @@ foreach ($_proModules as $_mod):
     if (file_exists($_modJs)): ?>
 <script src="<?= BASE_URL ?>assets/mdb-pro/modules/<?= e($_mod) ?>.min.js"></script>
 <?php endif; endforeach; ?>
-<script src="<?= BASE_URL ?>assets/js/custom.js"></script>
+<script src="<?= assetUrl('assets/js/custom.js') ?>"></script>
 <script>
 document.addEventListener('DOMContentLoaded', () => {
     // User dropdown (manual — MDB auto-init unreliable)

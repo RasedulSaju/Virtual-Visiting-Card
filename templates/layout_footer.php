@@ -76,7 +76,7 @@ foreach ($_proModules as $_mod):
 <script src="<?= BASE_URL ?>assets/mdb-pro/modules/<?= e($_mod) ?>.min.js"></script>
 <?php endif; endforeach; ?>
 <!-- Custom -->
-<script src="<?= BASE_URL ?>assets/js/custom.js"></script>
+<script src="<?= assetUrl('assets/js/custom.js') ?>"></script>
 <script>
 document.addEventListener('DOMContentLoaded', () => {
 

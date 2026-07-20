@@ -47,8 +47,8 @@ foreach ($_proModules as $_mod):
     if (file_exists($_modCss)): ?>
     <link rel="stylesheet" href="<?= BASE_URL ?>assets/mdb-pro/modules/<?= e($_mod) ?>.min.css">
 <?php endif; endforeach; ?>
-    <link rel="stylesheet" href="<?= BASE_URL ?>assets/css/custom.css">
-    <link rel="stylesheet" href="<?= BASE_URL ?>assets/css/admin.css">
+    <link rel="stylesheet" href="<?= assetUrl('assets/css/custom.css') ?>">
+    <link rel="stylesheet" href="<?= assetUrl('assets/css/admin.css') ?>">
 <?php
 $_theme = getTheme();
 ?>
