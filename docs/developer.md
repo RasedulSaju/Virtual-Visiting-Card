@@ -380,12 +380,54 @@ $defaults = [
 
 ---
 
+## MDB Framework Loading (Pro → Bundled Free → CDN)
+
+### How It Works
+The site loads MDB's core CSS/JS with a three-tier fallback, checked in this
+exact order, with only ONE actually loading:
+
+1. **`assets/mdb-pro/mdb.min.css` + `mdb.min.js`** — your paid Pro license,
+   if you've uploaded it. Gitignored — never committed, since it's licensed.
+2. **`assets/mdb-free/mdb.min.css` + `mdb.min.js`** — the free, MIT-licensed
+   MDB build, bundled directly in this repo. Committed to git on purpose —
+   this is what guarantees the site works immediately after cloning, with
+   zero setup steps and zero dependency on an external CDN being reachable.
+3. **CDN (`cdnjs.cloudflare.com`)** — only used if neither of the above
+   exists on disk for some reason. A last-resort safety net, not the
+   primary path.
+
+This means a fresh install works correctly out of the box with no manual
+download step, and continues working even if the Pro license is removed,
+the bundled free files are somehow deleted, or the server has no outbound
+internet access to reach a CDN (as long as the bundled free files exist).
+
+Both `templates/layout_header.php` / `layout_footer.php` and
+`admin/layout_header.php` / `layout_footer.php` implement this same
+priority order independently.
+
+### Updating the Bundled Free Version
+The bundled free files came from the official `mdb-ui-kit` npm package.
+To update them to a newer version:
+```bash
+npm pack mdb-ui-kit@<version>
+tar -xzf mdb-ui-kit-<version>.tgz
+cp package/css/mdb.min.css assets/mdb-free/
+cp package/js/mdb.min.js   assets/mdb-free/
+cp package/LICENSE         assets/mdb-free/LICENSE.txt
+```
+Commit the updated files — they're intentionally tracked by git (see the
+note in `.gitignore`).
+
+---
+
 ## MDB Pro Module System
 
 ### How It Works
 Both public and admin layouts support a `$proModules` array. Declare it
 before including `layout_header.php` and the matching CSS/JS files are
-auto-loaded **only if they exist** in `assets/mdb-pro/modules/`.
+auto-loaded **only if they exist** in `assets/mdb-pro/modules/`. Modules
+are Pro-only — there is no free/bundled equivalent for these, since the
+free MDB build doesn't include them.
 
 ```php
 // At the top of any page, BEFORE requiring layout_header.php:
@@ -394,7 +436,8 @@ require_once __DIR__ . '/../layout_header.php';
 ```
 
 - Pages that don't declare `$proModules` load zero extra files
-- `animate` is always auto-included on public pages (used on profile)
+- `animate` is always auto-requested on public pages (used on profile),
+  but silently skipped if you haven't uploaded the Pro animate module
 - Admin pages have no automatic modules — declare everything explicitly
 
 ### Available Modules (from MDB Pro 6.1.0)

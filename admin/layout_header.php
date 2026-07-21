@@ -31,21 +31,27 @@ function _adminNavLink(string $href, string $icon, string $label, string $key, s
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/mdb-ui-kit/6.4.0/mdb.min.css">
 <?php
-// MDB Pro (optional) — same auto-detection as public layout.
-// Admin pages declare needed modules via $proModules before including this file.
+// ── MDB CSS — Pro (if uploaded) > bundled free (in-repo) > CDN (last resort) ──
 $_mdbProDir  = dirname(__DIR__) . '/assets/mdb-pro';
+$_mdbFreeDir = dirname(__DIR__) . '/assets/mdb-free';
 $_mdbProCss  = $_mdbProDir . '/mdb.min.css';
-$_proModules = array_unique($proModules ?? []);
+$_mdbFreeCss = $_mdbFreeDir . '/mdb.min.css';
 
 if (file_exists($_mdbProCss)): ?>
-    <link rel="stylesheet" href="<?= BASE_URL ?>assets/mdb-pro/mdb.min.css">
+    <link rel="stylesheet" href="<?= assetUrl('assets/mdb-pro/mdb.min.css') ?>">
+<?php elseif (file_exists($_mdbFreeCss)): ?>
+    <link rel="stylesheet" href="<?= assetUrl('assets/mdb-free/mdb.min.css') ?>">
+<?php else: ?>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/mdb-ui-kit/6.4.0/mdb.min.css">
 <?php endif;
+
+// MDB Pro modules (optional, additive) — admin pages declare via $proModules
+$_proModules = array_unique($proModules ?? []);
 foreach ($_proModules as $_mod):
     $_modCss = $_mdbProDir . '/modules/' . $_mod . '.min.css';
     if (file_exists($_modCss)): ?>
-    <link rel="stylesheet" href="<?= BASE_URL ?>assets/mdb-pro/modules/<?= e($_mod) ?>.min.css">
+    <link rel="stylesheet" href="<?= assetUrl('assets/mdb-pro/modules/' . $_mod . '.min.css') ?>">
 <?php endif; endforeach; ?>
     <link rel="stylesheet" href="<?= assetUrl('assets/css/custom.css') ?>">
     <link rel="stylesheet" href="<?= assetUrl('assets/css/admin.css') ?>">

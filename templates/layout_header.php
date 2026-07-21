@@ -49,24 +49,34 @@ $_og = array_merge([
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/mdb-ui-kit/6.4.0/mdb.min.css">
 <?php
-// ── MDB Pro (optional) ───────────────────────────────────────
-// Upload MDB Pro 6.1.0 files to assets/mdb-pro/ to enable Pro features.
-// Pages declare which modules they need via $proModules array, e.g.:
-//   $proModules = ['datatable', 'perfect-scrollbar'];
-// animate.min.css is always loaded when present (used globally on profile).
-$_mdbProDir    = __DIR__ . '/../assets/mdb-pro';
-$_mdbProCss    = $_mdbProDir . '/mdb.min.css';
-$_proModules   = array_unique(array_merge(['animate'], $proModules ?? []));
+// ── MDB CSS — Pro (if uploaded) > bundled free (in-repo) > CDN (last resort) ──
+// Only ONE of these loads, whichever is found first, to avoid loading
+// the whole framework twice. Pro users still get the free-tier styles
+// since MDB Pro is a superset of the free build.
+$_mdbProDir  = __DIR__ . '/../assets/mdb-pro';
+$_mdbFreeDir = __DIR__ . '/../assets/mdb-free';
+$_mdbProCss  = $_mdbProDir . '/mdb.min.css';
+$_mdbFreeCss = $_mdbFreeDir . '/mdb.min.css';
 
 if (file_exists($_mdbProCss)): ?>
-    <link rel="stylesheet" href="<?= BASE_URL ?>assets/mdb-pro/mdb.min.css">
+    <link rel="stylesheet" href="<?= assetUrl('assets/mdb-pro/mdb.min.css') ?>">
+<?php elseif (file_exists($_mdbFreeCss)): ?>
+    <link rel="stylesheet" href="<?= assetUrl('assets/mdb-free/mdb.min.css') ?>">
+<?php else: ?>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/mdb-ui-kit/6.4.0/mdb.min.css">
 <?php endif;
+
+// ── MDB Pro modules (optional, additive) ──────────────────────
+// Upload MDB Pro 6.1.0 module files to assets/mdb-pro/modules/ to
+// enable specific Pro features. Pages declare which they need via
+// $proModules array, e.g.: $proModules = ['datatable', 'perfect-scrollbar'];
+// animate is always requested when present (used globally on profile).
+$_proModules = array_unique(array_merge(['animate'], $proModules ?? []));
 foreach ($_proModules as $_mod):
     $_modCss = $_mdbProDir . '/modules/' . $_mod . '.min.css';
     if (file_exists($_modCss)): ?>
-    <link rel="stylesheet" href="<?= BASE_URL ?>assets/mdb-pro/modules/<?= e($_mod) ?>.min.css">
+    <link rel="stylesheet" href="<?= assetUrl('assets/mdb-pro/modules/' . $_mod . '.min.css') ?>">
 <?php endif; endforeach; ?>
     <link rel="stylesheet" href="<?= assetUrl('assets/css/custom.css') ?>">
 <?php

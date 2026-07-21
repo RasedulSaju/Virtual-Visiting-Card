@@ -2,19 +2,26 @@
     </main><!-- /admin-content -->
 </div><!-- /admin-wrapper -->
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/mdb-ui-kit/6.4.0/mdb.umd.min.js"></script>
 <?php
+// ── MDB JS — Pro (if uploaded) > bundled free (in-repo) > CDN (last resort) ──
 $_mdbProDir  = dirname(__DIR__) . '/assets/mdb-pro';
+$_mdbFreeDir = dirname(__DIR__) . '/assets/mdb-free';
 $_mdbProJs   = $_mdbProDir . '/mdb.min.js';
-$_proModules = array_unique($proModules ?? []);
+$_mdbFreeJs  = $_mdbFreeDir . '/mdb.min.js';
 
 if (file_exists($_mdbProJs)): ?>
-<script src="<?= BASE_URL ?>assets/mdb-pro/mdb.min.js"></script>
+<script src="<?= assetUrl('assets/mdb-pro/mdb.min.js') ?>"></script>
+<?php elseif (file_exists($_mdbFreeJs)): ?>
+<script src="<?= assetUrl('assets/mdb-free/mdb.min.js') ?>"></script>
+<?php else: ?>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mdb-ui-kit/6.4.0/mdb.umd.min.js"></script>
 <?php endif;
+
+$_proModules = array_unique($proModules ?? []);
 foreach ($_proModules as $_mod):
     $_modJs = $_mdbProDir . '/modules/' . $_mod . '.min.js';
     if (file_exists($_modJs)): ?>
-<script src="<?= BASE_URL ?>assets/mdb-pro/modules/<?= e($_mod) ?>.min.js"></script>
+<script src="<?= assetUrl('assets/mdb-pro/modules/' . $_mod . '.min.js') ?>"></script>
 <?php endif; endforeach; ?>
 <script src="<?= assetUrl('assets/js/custom.js') ?>"></script>
 <script>
