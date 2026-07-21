@@ -141,9 +141,9 @@ post_max_size = 6M
 ## Form / UI Issues
 
 ### Form labels overlap with filled text
-**Cause:** Old MDB5 version required JavaScript (`new mdb.Input(el).init()`) to activate floating labels. When MDB JS failed to load or initialize, labels would sit on top of values.
+**Cause:** This project uses MDB's real `Input` component (`new mdb.Input(el).init()`) to drive floating labels, since it correctly handles autofill and value-state edge cases that a CSS-only approach cannot reliably cover across all browsers.
 
-**Fix:** Already patched — floating labels now use pure CSS (`:placeholder-shown` selector) with no JS dependency. Replace `assets/css/custom.css` and `assets/js/custom.js` with the latest versions.
+**Fix:** Ensure `assets/mdb-pro/mdb.min.js` (or the free CDN `mdb.umd.min.js`) loads *before* `assets/js/custom.js` in both `templates/layout_footer.php` and `admin/layout_footer.php` — `custom.js` calls `window.initMdbInputs()` on page load, which requires `mdb.Input` to already be defined. If you add new `.form-outline` fields dynamically via JavaScript (e.g. a repeatable "Add" button), call `window.initMdbInputs(containerElement)` after inserting the new markup so MDB initializes it too — see `edit_profile.php` for a working example with cloned rows.
 
 ---
 

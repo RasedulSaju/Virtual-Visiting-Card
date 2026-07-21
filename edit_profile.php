@@ -460,7 +460,14 @@ document.querySelectorAll('.repeat-add-btn').forEach(btn => {
         const wrap = document.getElementById('repeat-' + fid + '-rows');
         const first = wrap.querySelector('.repeat-row');
         const clone = first.cloneNode(true);
+
+        // Clear values and strip any MDB-generated markup/state from
+        // the original row before this clone gets its own fresh init
         clone.querySelectorAll('input, textarea, select').forEach(el => el.value = '');
+        clone.querySelectorAll('.form-notch').forEach(el => el.remove());
+        clone.querySelectorAll('.form-label').forEach(el => el.classList.remove('active'));
+        clone.querySelectorAll('.form-control').forEach(el => el.classList.remove('active'));
+
         if (!clone.querySelector('.remove-row-btn')) {
             const rm = document.createElement('button');
             rm.type = 'button';
@@ -470,6 +477,7 @@ document.querySelectorAll('.repeat-add-btn').forEach(btn => {
         }
         wrap.appendChild(clone);
         bindRemove(clone.querySelector('.remove-row-btn'));
+        window.initMdbInputs?.(clone);
     });
 });
 
@@ -480,7 +488,12 @@ document.querySelectorAll('.group-add-btn').forEach(btn => {
         const wrap = document.getElementById('group-' + gk + '-rows');
         const first = wrap.querySelector('.group-row');
         const clone = first.cloneNode(true);
+
         clone.querySelectorAll('input, textarea, select').forEach(el => el.value = '');
+        clone.querySelectorAll('.form-notch').forEach(el => el.remove());
+        clone.querySelectorAll('.form-label').forEach(el => el.classList.remove('active'));
+        clone.querySelectorAll('.form-control').forEach(el => el.classList.remove('active'));
+
         if (!clone.querySelector('.remove-row-btn')) {
             const rm = document.createElement('button');
             rm.type = 'button';
@@ -490,6 +503,7 @@ document.querySelectorAll('.group-add-btn').forEach(btn => {
         }
         wrap.appendChild(clone);
         bindRemove(clone.querySelector('.remove-row-btn'));
+        window.initMdbInputs?.(clone);
     });
 });
 

@@ -7,51 +7,27 @@
 
 document.addEventListener('DOMContentLoaded', () => {
 
-    /* ── Floating labels (CSS-only) ──────────────────────────
-       Bootstrap's :placeholder-shown selector requires a
-       placeholder attribute to be present (even if just a
-       space). This makes our .form-outline labels float
-       correctly on load for pre-filled values, with no
-       dependency on MDB's JS Input component. */
-    document.querySelectorAll('.form-outline > .form-control, .form-outline > textarea.form-control').forEach(el => {
-        if (!el.hasAttribute('placeholder')) {
-            el.setAttribute('placeholder', ' ');
-        }
-    });
-
-    /* ── Browser autofill detection (fallback for :-webkit-autofill) ──
-       Some Chrome versions don't reliably keep the floating label in
-       sync with autofilled values via CSS alone. This listens for the
-       'onAutoFillStart' animation (defined in custom.css) that fires
-       the moment Chrome autofills a field, and permanently marks it
-       with .is-autofilled so the label floats regardless of
-       :placeholder-shown's actual state. Runs once per field, safe
-       to fire multiple times (idempotent). */
-    document.addEventListener('animationstart', (e) => {
-        if (e.animationName === 'onAutoFillStart' && e.target.matches('.form-outline > .form-control')) {
-            e.target.classList.add('is-autofilled');
-        }
-    });
-
-    /* ── Extra safety net: re-check all fields shortly after load ───
-       Covers any autofill that happens before our listeners attach,
-       or browsers where the animation trick doesn't fire at all —
-       directly checks the input's current value against what the
-       label's floated state should be. */
-    setTimeout(() => {
-        document.querySelectorAll('.form-outline > .form-control').forEach(el => {
-            if (el.value && el.value.trim() !== '') {
-                el.classList.add('is-autofilled');
-            }
+    /* ── Floating labels — MDB's real Input component ────────────
+       Using MDB's own JS instead of a CSS-only :placeholder-shown
+       hack. This correctly handles autofill, notch rendering, and
+       focus/value state natively since it's MDB's own tested code
+       — no more fighting edge cases ourselves.
+       Exposed as window.initMdbInputs so it can be re-run after
+       dynamically adding new .form-outline fields (e.g. repeatable
+       / grouped profile fields added via 'Add' buttons). */
+    window.initMdbInputs = function (root = document) {
+        if (typeof mdb === 'undefined' || !mdb.Input) return;
+        root.querySelectorAll('.form-outline').forEach(el => {
+            try {
+                const hasInstance = typeof mdb.Input.getInstance === 'function'
+                    ? mdb.Input.getInstance(el)
+                    : false;
+                if (hasInstance) return; // already initialized — avoid double-binding
+                new mdb.Input(el).init();
+            } catch (err) { /* ignore — non-fatal, e.g. already initialized internally */ }
         });
-    }, 300);
-
-    // Keep the safety-net class in sync as the user types or clears a field
-    document.querySelectorAll('.form-outline > .form-control').forEach(el => {
-        el.addEventListener('input', () => {
-            el.classList.toggle('is-autofilled', el.value.trim() !== '');
-        });
-    });
+    };
+    window.initMdbInputs();
 
     /* ── Auto-dismiss alerts after 5s ───────────────────────── */
     document.querySelectorAll('.alert.alert-success, .alert.alert-info').forEach(alert => {

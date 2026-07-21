@@ -143,154 +143,45 @@ main.container { flex: 1; }
     color: white;
 }
 
-/* ── Floating Labels (CSS-only, no MDB JS required) ───────────
-   !important flags are intentional here: MDB Pro's own
-   .form-outline rules (driven by JS-added classes we don't use)
-   can otherwise win the cascade and cause the label to sit on
-   top of the value instead of floating above it. */
-.form-outline {
-    position: relative;
-}
-
-.form-outline > .form-control,
-.form-outline > textarea.form-control {
-    height: calc(3.5rem + 2px) !important;
-    padding: 1rem .75rem !important;
-    line-height: 1.4 !important;
-}
-
-.form-outline > textarea.form-control {
-    height: auto !important;
-    min-height: calc(3.5rem + 2px) !important;
-    padding-top: 1.625rem !important;
-}
-
-.form-outline > .form-control::placeholder {
-    color: transparent !important;
-}
-
-.form-outline > .form-control:focus,
-.form-outline > .form-control:not(:placeholder-shown) {
-    padding-top: 1.625rem !important;
-    padding-bottom: .625rem !important;
-}
-
-.form-outline > .form-label {
-    position: absolute !important;
-    top: 0 !important;
-    left: 0 !important;
-    height: 100% !important;
-    max-width: 100% !important;
-    padding: 1rem .75rem !important;
-    margin-bottom: 0 !important;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-    pointer-events: none;
-    border: 1px solid transparent !important;
-    transform-origin: 0 0;
-    transform: none;
-    transition: opacity .1s ease-in-out, transform .1s ease-in-out;
-    color: var(--cms-muted);
-    background: transparent !important;
-}
-
-.form-outline > .form-control:focus ~ .form-label,
-.form-outline > .form-control:not(:placeholder-shown) ~ .form-label {
-    opacity: .85;
-    transform: scale(.82) translateY(-.55rem) translateX(.15rem) !important;
-    color: var(--cms-primary) !important;
-    background: var(--cms-surface) !important;
-    padding-left: .35rem !important;
-    padding-right: .35rem !important;
-    max-width: calc(133% - 1.5rem); /* compensate for scale(.82) */
-}
-
-.form-outline > textarea.form-control:not(:placeholder-shown) ~ .form-label,
-.form-outline > textarea.form-control:focus ~ .form-label {
-    height: auto !important;
-}
-
-.form-outline > .form-control:focus {
+/* ── Form Fields (MDB Input component handles structure/behavior;
+   this only themes colors to match the site's brand palette) ──── */
+.form-outline .form-control:focus {
     border-color: var(--cms-primary) !important;
-    box-shadow: 0 0 0 .15rem rgba(79, 70, 229, .15) !important;
-    z-index: 3;
+    box-shadow: inset 0 0 0 1px var(--cms-primary) !important;
 }
 
-/* Neutralise MDB Pro's own notch/active-driven floating label system
-   on any .form-outline we control, so only the rules above apply. */
-.form-outline .form-notch,
+.form-outline .form-label {
+    color: var(--cms-muted);
+}
+
+.form-outline .form-control:focus ~ .form-label,
+.form-outline .form-label.active {
+    color: var(--cms-primary) !important;
+}
+
 .form-outline .form-notch-leading,
 .form-outline .form-notch-middle,
 .form-outline .form-notch-trailing {
-    display: none !important;
+    border-color: var(--cms-border);
 }
 
-/* ── Browser Autofill Fix ───────────────────────────────────────
-   Chrome/Edge/Safari autofill (very common on Username/Email/
-   Password fields) doesn't reliably keep :placeholder-shown in
-   sync with the field's actual value, so the floating label can
-   get stuck in its large "empty" position even though the field
-   is visibly filled in by the browser. Detecting the special
-   :-webkit-autofill pseudo-class and forcing the label to float
-   fixes this regardless of :placeholder-shown's state. Also resets
-   the yellow autofill background to match our theme. */
-.form-outline > .form-control:-webkit-autofill,
-.form-outline > .form-control:-webkit-autofill:hover,
-.form-outline > .form-control:-webkit-autofill:focus {
+.form-outline .form-control:focus ~ .form-notch .form-notch-leading,
+.form-outline .form-control:focus ~ .form-notch .form-notch-middle,
+.form-outline .form-control:focus ~ .form-notch .form-notch-trailing {
+    border-color: var(--cms-primary) !important;
+}
+
+/* Autofill background — MDB's Input JS handles the label float state
+   correctly on its own; we only need to reset Chrome's forced yellow
+   background so it matches our theme. */
+.form-outline .form-control:-webkit-autofill,
+.form-outline .form-control:-webkit-autofill:hover,
+.form-outline .form-control:-webkit-autofill:focus {
     -webkit-text-fill-color: var(--cms-body) !important;
     -webkit-box-shadow: 0 0 0 1000px var(--cms-surface) inset !important;
     box-shadow: 0 0 0 1000px var(--cms-surface) inset !important;
     caret-color: var(--cms-body);
     transition: background-color 9999s ease-in-out 0s;
-    padding-top: 1.625rem !important;
-    padding-bottom: .625rem !important;
-}
-
-.form-outline > .form-control:-webkit-autofill ~ .form-label,
-.form-outline > .form-control:-webkit-autofill:hover ~ .form-label,
-.form-outline > .form-control:-webkit-autofill:focus ~ .form-label {
-    opacity: .85;
-    transform: scale(.82) translateY(-.55rem) translateX(.15rem) !important;
-    color: var(--cms-primary) !important;
-    background: var(--cms-surface) !important;
-    padding-left: .35rem !important;
-    padding-right: .35rem !important;
-    max-width: calc(133% - 1.5rem);
-}
-
-/* Firefox autofill uses a different signal — :autofill (no vendor prefix needed in modern Firefox) */
-.form-outline > .form-control:autofill ~ .form-label {
-    opacity: .85;
-    transform: scale(.82) translateY(-.55rem) translateX(.15rem) !important;
-    color: var(--cms-primary) !important;
-    background: var(--cms-surface) !important;
-    padding-left: .35rem !important;
-    padding-right: .35rem !important;
-    max-width: calc(133% - 1.5rem);
-}
-
-/* JS-detectable autofill hook — see custom.js. Some Chrome versions
-   don't live-update :-webkit-autofill in all situations, so this
-   animation fires an 'animationstart' event JS can listen for as a
-   fully reliable fallback (adds .is-autofilled, handled below). */
-@keyframes onAutoFillStart { from {} to {} }
-.form-outline > .form-control:-webkit-autofill {
-    animation-name: onAutoFillStart;
-    animation-duration: .001s;
-}
-.form-outline > .form-control.is-autofilled ~ .form-label {
-    opacity: .85 !important;
-    transform: scale(.82) translateY(-.55rem) translateX(.15rem) !important;
-    color: var(--cms-primary) !important;
-    background: var(--cms-surface) !important;
-    padding-left: .35rem !important;
-    padding-right: .35rem !important;
-    max-width: calc(133% - 1.5rem);
-}
-.form-outline > .form-control.is-autofilled {
-    padding-top: 1.625rem !important;
-    padding-bottom: .625rem !important;
 }
 
 /* ── Buttons ─────────────────────────────────────────────────── */
