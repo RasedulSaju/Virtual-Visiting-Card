@@ -46,7 +46,7 @@ try {
         $metaRobots = resolveMetaRobots($page['meta_robots'] ?? 'index,follow');
         $ogData = [
             'type'        => 'article',
-            'title'       => $page['title'] . ' — ' . siteName(),
+            'title'       => $page['title'] . ' - ' . siteName(),
             'description' => truncate(strip_tags((string)$page['content']), 160),
             'image'       => UPLOAD_URL . DEFAULT_AVATAR,
             'url'         => BASE_URL . $page['slug'],
@@ -93,11 +93,11 @@ try {
         $profileFields = $fieldDefs;
 
         $displayName = displayName($profileUser);
-        $pageTitle  = $displayName . ' — ' . siteName();
+        $pageTitle  = $displayName . ' - ' . siteName();
         $metaRobots = resolveMetaRobots($profileUser['meta_robots'] ?? 'index,follow');
         $ogData = [
             'type'        => 'profile',
-            'title'       => $displayName . ' — ' . siteName(),
+            'title'       => $displayName . ' - ' . siteName(),
             'description' => $profileUser['bio']
                 ? truncate(strip_tags((string)$profileUser['bio']), 160)
                 : $displayName . ' on ' . siteName(),
