@@ -56,15 +56,15 @@ vvcard/
 ├── members.php                  # Public members directory
 │
 ├── templates/
-│   ├── layout_header.php        # Public navbar, meta, analytics, theme CSS vars, MDB Pro
-│   ├── layout_footer.php        # Footer, MDB JS, Pro module JS, custom JS
+│   ├── layout_header.php        # Public navbar, meta, analytics, theme CSS vars, MDB (Pro/free/CDN)
+│   ├── layout_footer.php        # Footer, MDB JS (Pro/free/CDN), Pro modules, custom JS
 │   ├── page.php                 # CMS page renderer
 │   ├── profile.php              # User profile card + custom fields + animations
 │   └── 404.php                  # 404 page
 │
 ├── admin/
 │   ├── auth_check.php           # Admin session guard
-│   ├── layout_header.php        # Admin sidebar, topbar, theme vars, MDB Pro
+│   ├── layout_header.php        # Admin sidebar, topbar, theme vars, MDB (Pro/free/CDN)
 │   ├── layout_footer.php        # Admin JS, Pro module JS
 │   ├── index.php                # Dashboard
 │   ├── users/
@@ -92,12 +92,17 @@ vvcard/
 │       └── index.php            # Tabs: General, SMTP, Appearance, SEO, Analytics
 │
 ├── assets/
+│   ├── README.md                # Explains mdb-free vs mdb-pro, update instructions
 │   ├── css/
 │   │   ├── custom.css           # Public design system + CSS variables + watermark
 │   │   └── admin.css            # Admin sidebar layout + topbar + dropdown
 │   ├── js/
-│   │   └── custom.js            # Floating labels, dropdown, collapse, confirm
-│   └── mdb-pro/                 # MDB Pro files (gitignored — drop in your files)
+│   │   └── custom.js            # MDB Input init, dropdown, collapse, confirm
+│   ├── mdb-free/                # Bundled MIT-licensed MDB (committed to git)
+│   │   ├── mdb.min.css
+│   │   ├── mdb.min.js
+│   │   └── LICENSE.txt
+│   └── mdb-pro/                 # Your MDB Pro license (gitignored — upload your own)
 │       ├── mdb.min.css
 │       ├── mdb.min.js
 │       └── modules/

@@ -51,10 +51,15 @@ define('DB_PASS', 'strongpassword');  // ← your database password
 4. **Delete `setup.php` immediately** after success
 
 ### Step 6 — Install PHPMailer (Optional — for email)
-1. Visit `https://yourdomain.com/vvcard/install_phpmailer.php` (must be logged in as admin)
-2. Click **Download & Install PHPMailer**
-3. Delete `install_phpmailer.php` after success
-4. Configure SMTP in **Admin → Settings → SMTP**
+1. Download PHPMailer from GitHub: `github.com/PHPMailer/PHPMailer` (use the "Code → Download ZIP" button, or a specific release)
+2. From the downloaded files, upload only these into your project:
+   ```
+   vendor/autoload.php
+   vendor/phpmailer/phpmailer/src/PHPMailer.php
+   vendor/phpmailer/phpmailer/src/SMTP.php
+   vendor/phpmailer/phpmailer/src/Exception.php
+   ```
+3. Configure SMTP in **Admin → Settings → SMTP** — the page shows a diagnostic panel confirming each file is found correctly
 
 ---
 
@@ -87,11 +92,15 @@ define('DB_PASS', ''); // default XAMPP has no password
 Visit `http://localhost/vvcard/setup.php` and create your admin account.
 
 ### Step 6 — Install PHPMailer (Optional)
-```bat
-cd C:\xampp\htdocs\vvcard
-install.bat
+Download PHPMailer from `github.com/PHPMailer/PHPMailer` and copy these files
+into your project (see [Step 6 above](#step-6--install-phpmailer-optional---for-email)
+for the exact file list):
 ```
-Or visit `http://localhost/vvcard/install_phpmailer.php`
+C:\xampp\htdocs\vvcard\vendor\autoload.php
+C:\xampp\htdocs\vvcard\vendor\phpmailer\phpmailer\src\PHPMailer.php
+C:\xampp\htdocs\vvcard\vendor\phpmailer\phpmailer\src\SMTP.php
+C:\xampp\htdocs\vvcard\vendor\phpmailer\phpmailer\src\Exception.php
+```
 
 ---
 
@@ -174,8 +183,29 @@ server {
 ### Step 7 — Install PHPMailer
 ```bash
 cd /var/www/html/vvcard
-bash install.sh
+mkdir -p vendor/phpmailer/phpmailer/src
+
+# Download and extract PHPMailer, then copy the 3 required files:
+curl -L -o phpmailer.zip https://github.com/PHPMailer/PHPMailer/archive/refs/heads/master.zip
+unzip phpmailer.zip
+cp PHPMailer-master/src/PHPMailer.php vendor/phpmailer/phpmailer/src/
+cp PHPMailer-master/src/SMTP.php      vendor/phpmailer/phpmailer/src/
+cp PHPMailer-master/src/Exception.php vendor/phpmailer/phpmailer/src/
+rm -rf phpmailer.zip PHPMailer-master
 ```
+Then create `vendor/autoload.php`:
+```php
+<?php
+spl_autoload_register(function (string $class): void {
+    $map = [
+        'PHPMailer\\PHPMailer\\Exception' => __DIR__ . '/phpmailer/phpmailer/src/Exception.php',
+        'PHPMailer\\PHPMailer\\PHPMailer' => __DIR__ . '/phpmailer/phpmailer/src/PHPMailer.php',
+        'PHPMailer\\PHPMailer\\SMTP'      => __DIR__ . '/phpmailer/phpmailer/src/SMTP.php',
+    ];
+    if (isset($map[$class])) require_once $map[$class];
+});
+```
+Or if you prefer Composer: `composer require phpmailer/phpmailer`
 
 ---
 
@@ -183,7 +213,6 @@ bash install.sh
 
 ```
 ☐ setup.php deleted
-☐ install_phpmailer.php deleted (if used)
 ☐ APP_DEBUG set to false in app-defaults.php (production)
 ☐ uploads/profiles/ is writable (chmod 755)
 ☐ Site name set in Admin → Settings → General

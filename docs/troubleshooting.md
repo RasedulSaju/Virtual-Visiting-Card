@@ -44,18 +44,6 @@ Same cause as above.
 
 ---
 
-### `Duplicate column name 'meta_robots'`
-**Cause:** You imported `schema.sql` which already includes `meta_robots` in `CREATE TABLE`, then also ran `migration_006` which tried to `ALTER TABLE ADD COLUMN meta_robots` again.
-
-**Fix:** Use `install.sql` for fresh installs — it merges everything correctly with no duplicate statements. If your database is in a partial state:
-```sql
-DROP DATABASE your_db;
-CREATE DATABASE your_db CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
-```
-Then import `install.sql`.
-
----
-
 ### `Access denied for user 'root'@'localhost'`
 **Cause:** Wrong database credentials in `config.php`.
 
@@ -69,14 +57,6 @@ Then import `install.sql`.
 **Fix:** Import `install.sql` into the correct database. Verify `DB_NAME` in `config.php`.
 
 ---
-
-### `SQLSTATE[42S22]: Column not found: 1054 Unknown column 'skey'`
-**Cause:** Running old `schema.sql` that used `key` instead of `skey` (MySQL reserved word).
-
-**Fix:** Use `install.sql` which uses `skey` correctly from the start. Or run:
-```sql
-ALTER TABLE settings CHANGE COLUMN `key` `skey` VARCHAR(100) NOT NULL;
-```
 
 ---
 
@@ -190,7 +170,7 @@ Same cause as dropdown issue above. **Fix:** Same fix — replace both layout fo
 **This is expected behavior** when PHPMailer is not installed or SMTP is not configured.
 
 **Fix:** 
-1. Install PHPMailer (visit `/install_phpmailer.php` as admin)
+1. Install PHPMailer manually — see [Installation Guide](installation.md#step-6--install-phpmailer-optional---for-email)
 2. Configure SMTP in **Admin → Settings → SMTP**
 3. Use the **Send Test Email** button to verify it's working
 
@@ -205,10 +185,10 @@ Common causes:
 
 ---
 
-### PHPMailer not found after installation
-**Cause:** The `vendor/autoload.php` wasn't created, or PHPMailer files are in the wrong directory.
+### PHPMailer not found / SMTP tab shows "Not Configured"
+**Cause:** `vendor/autoload.php` is missing, or the PHPMailer source files aren't in the expected path.
 
-**Fix:** Visit `/install_phpmailer.php` and click **Create vendor/autoload.php** (Option B). Verify files exist at:
+**Fix:** **Admin → Settings → SMTP** shows a diagnostic panel confirming exactly which requirement is failing (Host / Username / From Email / PHPMailer file). Verify the exact path shown exists on your server:
 ```
 vendor/
 └── phpmailer/
@@ -218,6 +198,7 @@ vendor/
             ├── SMTP.php
             └── Exception.php
 ```
+And that `vendor/autoload.php` exists alongside the `vendor/phpmailer/` folder. See [Installation Guide](installation.md#step-6--install-phpmailer-optional---for-email) for the exact file list and download source.
 
 ---
 
@@ -246,14 +227,6 @@ vendor/
 
 ### File permissions error on upload
 **Fix:** In cPanel → File Manager, right-click `uploads/profiles/` → **Change Permissions** → set to `755`.
-
----
-
-### `install.bat` doesn't work on cPanel
-`install.bat` is for Windows (XAMPP). For cPanel:
-1. Use the browser installer: `/install_phpmailer.php`
-2. Or use cPanel Terminal: `bash install.sh`
-3. Or use cPanel File Manager for manual upload (see [Installation Guide](installation.md))
 
 ---
 
