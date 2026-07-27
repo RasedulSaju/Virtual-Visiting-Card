@@ -6,7 +6,7 @@ if (empty($profileUser)) {
     require __DIR__ . '/404.php';
     exit;
 }
-/** for this version is for vcard.rajusaju.com */
+
 $profileFields = $profileFields ?? [];
 $isSelf        = isLoggedIn() && (int)$_SESSION['user_id'] === (int)$profileUser['id'];
 $viewerIsAdmin = isAdmin();
@@ -80,7 +80,7 @@ function _renderFieldValue(array $field, string $val): string
 
 <div class="row g-4 <?= $isResigned ? 'resigned-profile' : '' ?>">
     <!-- ── Left Column: Profile Card ──────────────────────── -->
-    <div class="col-md-12">
+    <div class="col-md-4 col-lg-3">
         <div class="card border-0 shadow-sm text-center profile-card">
             <div class="profile-card-banner"></div>
             <div class="card-body pt-0">
@@ -91,7 +91,7 @@ function _renderFieldValue(array $field, string $val): string
                          style="object-fit:cover;" alt="<?= e($displayTitle) ?>">
                 </div>
                 <h2 class="h5 fw-bold mb-0 mt-2"><?= e($displayTitle) ?></h2>
-                
+                <span class="badge <?= $roleBadgeCls ?> mb-2"><?= $roleLabel ?></span>
                 <?php if ($isResigned): ?>
                     <span class="badge bg-secondary mb-2 ms-1">Resigned</span>
                 <?php endif; ?>
@@ -99,14 +99,11 @@ function _renderFieldValue(array $field, string $val): string
                     <p class="text-muted small text-wrap px-2 mb-3">
                         <?= nl2br(e($profileUser['bio'])) ?>
                     </p>
-				<?php endif; ?>
-                <?php if ($viewerIsAdmin): ?>
-					<span class="badge <?= $roleBadgeCls ?> mb-2"><?= $roleLabel ?></span>
-					<small class="text-muted d-block mb-3">
-						<i class="fas fa-calendar-alt me-1"></i>
-						Registered: <?= date('D, d M Y', strtotime($profileUser['created_at'])) ?>
-					</small>
                 <?php endif; ?>
+                <small class="text-muted d-block mb-3">
+                    <i class="fas fa-calendar-alt me-1"></i>
+                    Joined <?= date('M Y', strtotime($profileUser['created_at'])) ?>
+                </small>
                 <?php if ($canEdit): ?>
                     <a href="<?= BASE_URL ?>edit-profile" class="btn btn-sm btn-outline-primary w-100">
                         <i class="fas fa-pen me-1"></i> Edit Profile
@@ -120,8 +117,10 @@ function _renderFieldValue(array $field, string $val): string
                 <?php endif; ?>
             </div>
         </div>
+    </div>
 
-		<!-- ── All Custom Fields ───────────────────────────── -->
+    <!-- ── Right Column: Fields ───────────────────────────── -->
+    <div class="col-md-8 col-lg-9">
         <?php if ($isResigned && !$viewerIsAdmin && !$isSelf): ?>
             <div class="card border-0 shadow-sm">
                 <div class="card-body text-center py-5">
@@ -187,9 +186,9 @@ function _renderFieldValue(array $field, string $val): string
             <!-- Standalone fields (single or repeatable) -->
             <?php if ($standaloneFields): ?>
             <div class="card border-0 shadow-sm">
-					<div class="card-header bg-transparent border-bottom fw-semibold p-4 pb-2">
-						<i class="fas fa-address-card me-2 text-primary"></i>Details
-					</div>
+                <div class="card-header bg-transparent border-bottom fw-semibold p-4 pb-2">
+                    <i class="fas fa-address-card me-2 text-primary"></i>Details
+                </div>
                 <div class="card-body p-4">
                     <dl class="profile-fields row g-3 mb-0">
                         <?php $i = 0; foreach ($standaloneFields as $field):
