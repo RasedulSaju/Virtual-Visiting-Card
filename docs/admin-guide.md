@@ -207,6 +207,38 @@ to do this once when onboarding them, and it stays fixed until you change it.
 7. Click **Save Appearance** → changes are live immediately site-wide
 8. Changed your mind? → **Reset to Defaults**
 
+#### Updating the Site Logo and Favicon
+1. **Admin → Settings → General → Branding**
+2. **Site Logo** — upload a JPG, PNG, GIF, or SVG. Once uploaded, it replaces
+   the site name text in the navbar automatically. Remove it (checkbox) to
+   go back to the text+icon logo.
+3. **Favicon** — upload a PNG, ICO, or SVG, ideally square (32×32 or 64×64px).
+   Shows in the browser tab on every page, admin panel included.
+4. Save — both take effect immediately, no cache clearing needed.
+
+#### Hiding the Navbar and Footer on Profile Pages
+For a clean, standalone "digital business card" look on `/username` pages —
+no site navigation, just the profile itself:
+1. **Admin → Settings → General → Profile Page Layout**
+2. Toggle **"Hide site navbar & footer on profile pages"** ON
+3. Save
+
+This only affects individual profile pages. The Members directory, CMS
+pages, and the admin panel keep their normal navigation.
+
+#### Controlling What Shows at Your Homepage
+By default, visiting your site's root URL (`domain.com/`) shows the login
+page. To change this:
+1. **Admin → Settings → General → Homepage**
+2. Choose one:
+   - **Login page** (default)
+   - **A specific page** — pick any existing CMS page from the dropdown;
+     it renders at your root URL while still remaining accessible at its
+     normal `/slug` address too
+   - **404 Not Found** — useful if you only want direct profile/page
+     links to work, with no public landing page at all
+3. Save
+
 #### Configuring Analytics
 1. **Admin → Settings → Analytics**
 2. Enter your tracking ID(s) — GA4, GTM, Clarity, Meta Pixel, Hotjar, Plausible
@@ -293,8 +325,12 @@ The page editor has an **Image** button in the toolbar:
 |---|---|
 | Site Name | Shown in navbar, browser tabs, emails, OG tags |
 | Site Description | `<meta name="description">` and Open Graph description |
+| Site Logo | Replaces the text logo in the navbar when uploaded |
+| Favicon | Browser tab icon, site-wide including admin panel |
 | Public Registration | Open / Closed (invited users can always register) |
 | File Upload Limit | 1–20 MB per image upload (cannot exceed PHP server limits) |
+| Homepage | What shows at your root URL — Login page, a specific CMS page, or 404 |
+| Hide navbar/footer on profiles | Standalone "digital business card" look for `/username` pages |
 
 ### Appearance Tab
 | Setting | What it does |

@@ -177,6 +177,11 @@ O-ve (O Negative)', 1),
 INSERT INTO `settings` (`skey`, `value`) VALUES
   ('registration_open', '1'),
   ('upload_limit_mb',   '4'),
+  ('logo_image',        ''),
+  ('favicon_image',     ''),
+  ('hide_chrome_on_profiles', '0'),
+  ('homepage_mode',     'login'),
+  ('homepage_page_slug', ''),
 
   -- SMTP settings
   ('smtp_host',       ''),

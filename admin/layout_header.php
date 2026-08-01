@@ -26,6 +26,9 @@ function _adminNavLink(string $href, string $icon, string $label, string $key, s
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title><?= e($pageTitle) ?> — Admin · <?= e(siteName()) ?></title>
+<?php if ($_siteFavicon = siteFaviconUrl()): ?>
+    <link rel="icon" href="<?= e($_siteFavicon) ?>">
+<?php endif; ?>
     <meta name="robots" content="noindex, nofollow">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>

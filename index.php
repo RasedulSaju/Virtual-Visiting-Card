@@ -14,6 +14,29 @@ if (!preg_match('/^[a-z0-9._-]*$/', $url)) {
     $url = '404';
 }
 
+// ─── ROOT / HOMEPAGE HANDLING ──────────────────────────────────
+// Configurable via Admin → Settings → General → Homepage
+if ($url === '') {
+    $_homepageMode = getSetting('homepage_mode', 'login');
+
+    if ($_homepageMode === 'page') {
+        $_homepageSlug = getSetting('homepage_page_slug', '');
+        if ($_homepageSlug !== '') {
+            $url = $_homepageSlug; // falls through to the Pages table lookup below
+        }
+        // No page configured yet? $url stays '' → matches systemRoutes[''] → login (safe default)
+    } elseif ($_homepageMode === '404') {
+        http_response_code(404);
+        $pageTitle  = '404 — Page Not Found';
+        $metaRobots = 'noindex,nofollow';
+        require __DIR__ . '/templates/layout_header.php';
+        require __DIR__ . '/templates/404.php';
+        require __DIR__ . '/templates/layout_footer.php';
+        exit;
+    }
+    // 'login' mode (default) — $url stays '' → matches systemRoutes[''] → login.php
+}
+
 // ─── 1. SYSTEM ROUTES ────────────────────────────────────────
 $systemRoutes = [
     ''                => __DIR__ . '/login.php',
@@ -104,6 +127,7 @@ try {
             'image'       => avatarUrl($profileUser['profile_image']),
             'url'         => BASE_URL . $profileUser['username'],
         ];
+        $hideChrome = getSetting('hide_chrome_on_profiles', '0') === '1';
         require __DIR__ . '/templates/layout_header.php';
         require __DIR__ . '/templates/profile.php';
         require __DIR__ . '/templates/layout_footer.php';

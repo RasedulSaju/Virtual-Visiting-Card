@@ -63,6 +63,12 @@ All settings below are stored in the `settings` table and editable from **Admin 
 | `site_name` | `'Virtual Visiting Card'` | Site title — shown in navbar, emails, browser tabs, OG tags |
 | `site_description` | `'Create and share...'` | Used in `<meta name="description">` and Open Graph |
 | `registration_open` | `'1'` | `'1'` = open · `'0'` = closed (invite-only bypass still works) |
+| `upload_limit_mb` | `'2'` | Max upload size (1–20 MB) for profile/page images |
+| `logo_image` | `''` | Filename in `uploads/pages/` — replaces text logo in navbar when set |
+| `favicon_image` | `''` | Filename in `uploads/pages/` — browser tab icon site-wide |
+| `hide_chrome_on_profiles` | `'0'` | `'1'` = hides navbar/footer on `/username` profile pages only |
+| `homepage_mode` | `'login'` | `'login'` \| `'page'` \| `'404'` — what renders at the root URL |
+| `homepage_page_slug` | `''` | Which page slug to show when `homepage_mode` is `'page'` |
 
 ### SMTP Tab
 

@@ -18,6 +18,48 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         // Upload limit — clamp between 1MB and 20MB
         $uploadMb = max(1, min(20, (int)($_POST['upload_limit_mb'] ?? 2)));
         setSetting('upload_limit_mb', (string)$uploadMb);
+
+        // Logo upload
+        if (!empty($_FILES['logo_image']['name'])) {
+            try {
+                $newLogo = uploadSiteImage($_FILES['logo_image'], ['jpg', 'jpeg', 'png', 'gif', 'svg']);
+                deleteSiteImage(getSetting('logo_image', ''));
+                setSetting('logo_image', $newLogo);
+            } catch (RuntimeException $e) {
+                flash('error', 'Logo: ' . $e->getMessage());
+                redirect('admin/settings/?tab=general');
+            }
+        }
+        if (isset($_POST['remove_logo'])) {
+            deleteSiteImage(getSetting('logo_image', ''));
+            setSetting('logo_image', '');
+        }
+
+        // Favicon upload
+        if (!empty($_FILES['favicon_image']['name'])) {
+            try {
+                $newFavicon = uploadSiteImage($_FILES['favicon_image'], ['png', 'ico', 'svg']);
+                deleteSiteImage(getSetting('favicon_image', ''));
+                setSetting('favicon_image', $newFavicon);
+            } catch (RuntimeException $e) {
+                flash('error', 'Favicon: ' . $e->getMessage());
+                redirect('admin/settings/?tab=general');
+            }
+        }
+        if (isset($_POST['remove_favicon'])) {
+            deleteSiteImage(getSetting('favicon_image', ''));
+            setSetting('favicon_image', '');
+        }
+
+        setSetting('hide_chrome_on_profiles', isset($_POST['hide_chrome_on_profiles']) ? '1' : '0');
+
+        $_homepageMode = $_POST['homepage_mode'] ?? 'login';
+        if (!in_array($_homepageMode, ['login', 'page', '404'], true)) {
+            $_homepageMode = 'login';
+        }
+        setSetting('homepage_mode', $_homepageMode);
+        setSetting('homepage_page_slug', trim($_POST['homepage_page_slug'] ?? ''));
+
         flash('success', 'General settings saved.');
         redirect('admin/settings/?tab=general');
     }
@@ -127,6 +169,9 @@ $registrationOpen = getSetting('registration_open', '1') === '1';
 $siteNameVal      = siteName();
 $siteDescVal      = siteDescription();
 $uploadLimitMb    = (int)getSetting('upload_limit_mb', '2');
+$homepageMode     = getSetting('homepage_mode', 'login');
+$homepagePageSlug = getSetting('homepage_page_slug', '');
+$availablePages   = $pdo->query('SELECT slug, title FROM pages ORDER BY title ASC')->fetchAll();
 
 $analytics = [
     'ga4_id'           => getSetting('analytics_ga4_id'),
@@ -207,7 +252,7 @@ require_once __DIR__ . '/../layout_header.php';
 <!-- ── General ──────────────────────────────────────────────── -->
 <div class="row g-4">
     <div class="col-lg-7">
-        <form method="POST">
+        <form method="POST" enctype="multipart/form-data">
             <?= csrfField() ?>
             <input type="hidden" name="action" value="save_general">
             <div class="card border-0 shadow-sm mb-4">
@@ -239,6 +284,67 @@ require_once __DIR__ . '/../layout_header.php';
                     </div>
                 </div>
             </div>
+
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-header fw-semibold"><i class="fas fa-image me-2 text-primary"></i>Branding</div>
+                <div class="card-body p-4">
+                    <div class="row g-4">
+                        <!-- Logo -->
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Site Logo</label>
+                            <div class="d-flex align-items-center gap-3 mb-2">
+                                <div class="border rounded p-2 d-flex align-items-center justify-content-center"
+                                     style="width:72px;height:72px;background:#f8fafc;">
+                                    <?php if ($currentLogo = siteLogoUrl()): ?>
+                                        <img src="<?= e($currentLogo) ?>" alt="Logo" style="max-width:100%;max-height:100%;object-fit:contain;">
+                                    <?php else: ?>
+                                        <i class="fas fa-layer-group text-muted fa-lg"></i>
+                                    <?php endif; ?>
+                                </div>
+                                <div class="flex-grow-1">
+                                    <input type="file" class="form-control form-control-sm" name="logo_image"
+                                           accept="image/jpeg,image/png,image/gif,image/svg+xml">
+                                    <div class="form-text">JPG, PNG, GIF, or SVG. Shown in the navbar instead of the site name text.</div>
+                                    <?php if ($currentLogo): ?>
+                                    <div class="form-check mt-1">
+                                        <input type="checkbox" class="form-check-input" id="remove_logo" name="remove_logo">
+                                        <label class="form-check-label small text-danger" for="remove_logo">Remove logo (show site name text instead)</label>
+                                    </div>
+                                    <?php endif; ?>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- Favicon -->
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Favicon</label>
+                            <div class="d-flex align-items-center gap-3 mb-2">
+                                <div class="border rounded p-2 d-flex align-items-center justify-content-center"
+                                     style="width:72px;height:72px;background:#f8fafc;">
+                                    <?php if ($currentFavicon = siteFaviconUrl()): ?>
+                                        <img src="<?= e($currentFavicon) ?>" alt="Favicon" style="max-width:32px;max-height:32px;object-fit:contain;">
+                                    <?php else: ?>
+                                        <i class="fas fa-star text-muted fa-lg"></i>
+                                    <?php endif; ?>
+                                </div>
+                                <div class="flex-grow-1">
+                                    <input type="file" class="form-control form-control-sm" name="favicon_image"
+                                           accept="image/png,image/x-icon,image/svg+xml,.ico">
+                                    <div class="form-text">PNG, ICO, or SVG. Square, ideally 32×32px or 64×64px.</div>
+                                    <?php if ($currentFavicon): ?>
+                                    <div class="form-check mt-1">
+                                        <input type="checkbox" class="form-check-input" id="remove_favicon" name="remove_favicon">
+                                        <label class="form-check-label small text-danger" for="remove_favicon">Remove favicon (browser default)</label>
+                                    </div>
+                                    <?php endif; ?>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-header fw-semibold"><i class="fas fa-user-plus me-2 text-primary"></i>Registration</div>
                 <div class="card-body p-4">
                     <div class="d-flex align-items-start justify-content-between gap-3">
                         <div>
@@ -255,6 +361,79 @@ require_once __DIR__ . '/../layout_header.php';
                     <div class="alert mt-3 mb-0 py-2 <?= $registrationOpen ? 'alert-success' : 'alert-warning' ?> d-flex align-items-center">
                         <i class="fas fa-<?= $registrationOpen ? 'lock-open text-success' : 'lock text-warning' ?> me-2"></i>
                         <span class="small">Registration is currently <strong><?= $registrationOpen ? 'OPEN' : 'CLOSED' ?></strong>.</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-header fw-semibold"><i class="fas fa-home me-2 text-primary"></i>Homepage</div>
+                <div class="card-body p-4">
+                    <label class="form-label fw-semibold">What shows at <code><?= e(BASE_URL) ?></code>?</label>
+                    <select name="homepage_mode" id="homepage_mode" class="form-select mb-3">
+                        <option value="login" <?= $homepageMode === 'login' ? 'selected' : '' ?>>
+                            Login page (default)
+                        </option>
+                        <option value="page" <?= $homepageMode === 'page' ? 'selected' : '' ?>>
+                            A specific page
+                        </option>
+                        <option value="404" <?= $homepageMode === '404' ? 'selected' : '' ?>>
+                            404 Not Found
+                        </option>
+                    </select>
+
+                    <div id="homepagePageWrap" style="<?= $homepageMode === 'page' ? '' : 'display:none;' ?>">
+                        <?php if ($availablePages): ?>
+                        <select name="homepage_page_slug" class="form-select">
+                            <option value="">— Select a page —</option>
+                            <?php foreach ($availablePages as $ap): ?>
+                            <option value="<?= e($ap['slug']) ?>" <?= $homepagePageSlug === $ap['slug'] ? 'selected' : '' ?>>
+                                <?= e($ap['title']) ?> (<?= e($ap['slug']) ?>)
+                            </option>
+                            <?php endforeach; ?>
+                        </select>
+                        <div class="form-text">
+                            The chosen page renders at your root URL — its own SEO/nav settings still apply.
+                            It also remains accessible at its normal <code>/<?= e($homepagePageSlug ?: 'slug') ?></code> URL.
+                        </div>
+                        <?php else: ?>
+                        <div class="alert alert-warning py-2 small mb-0">
+                            <i class="fas fa-exclamation-triangle me-1"></i>
+                            No pages exist yet. <a href="<?= BASE_URL ?>admin/pages/create.php">Create one first</a>,
+                            then come back to select it here.
+                        </div>
+                        <?php endif; ?>
+                    </div>
+
+                    <?php if ($homepageMode === '404'): ?>
+                    <div class="alert alert-warning py-2 small mb-0 mt-2">
+                        <i class="fas fa-exclamation-triangle me-1"></i>
+                        Visitors landing on your root URL will see a plain 404 page. Useful if you only
+                        want direct profile/page links to work, with no public homepage at all.
+                    </div>
+                    <?php endif; ?>
+                </div>
+            </div>
+
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-header fw-semibold"><i class="fas fa-id-card me-2 text-primary"></i>Profile Page Layout</div>
+                <div class="card-body p-4">
+                    <div class="d-flex align-items-start justify-content-between gap-3">
+                        <div>
+                            <p class="fw-semibold mb-1">Hide site navbar &amp; footer on profile pages</p>
+                            <p class="text-muted small mb-0">
+                                Shows only the profile card itself, full-page, with no site navigation —
+                                a clean standalone "digital business card" look for
+                                <code><?= e(BASE_URL) ?>username</code> pages. Members can still get back
+                                to the rest of the site via the URL bar; other pages (Members, CMS pages,
+                                Admin) are unaffected.
+                            </p>
+                        </div>
+                        <div class="form-check form-switch ms-3 flex-shrink-0">
+                            <input class="form-check-input" type="checkbox" role="switch"
+                                   id="hide_chrome_on_profiles" name="hide_chrome_on_profiles"
+                                   <?= getSetting('hide_chrome_on_profiles', '0') === '1' ? 'checked' : '' ?>
+                                   style="width:3rem;height:1.5rem;">
+                        </div>
                     </div>
                 </div>
             </div>
@@ -307,6 +486,13 @@ require_once __DIR__ . '/../layout_header.php';
         </div>
     </div>
 </div>
+
+<script>
+document.getElementById('homepage_mode')?.addEventListener('change', function () {
+    document.getElementById('homepagePageWrap').style.display =
+        this.value === 'page' ? '' : 'none';
+});
+</script>
 
 <?php elseif ($activeTab === 'smtp'): ?>
 <!-- ── SMTP ──────────────────────────────────────────────────── -->

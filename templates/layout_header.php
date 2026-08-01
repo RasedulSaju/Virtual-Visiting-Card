@@ -33,6 +33,9 @@ $_og = array_merge([
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title><?= e($_pageTitle) ?></title>
+<?php if ($_siteFavicon = siteFaviconUrl()): ?>
+    <link rel="icon" href="<?= e($_siteFavicon) ?>">
+<?php endif; ?>
     <meta name="description" content="<?= e($_og['description']) ?>">
     <meta name="robots" content="<?= e($metaRobots ?? resolveMetaRobots()) ?>">
     <meta property="og:type"         content="<?= e($_og['type']) ?>">
@@ -149,11 +152,16 @@ if ($_a_cHead !== ''): echo $_a_cHead; endif; ?>
 <?php endif;
 if (!empty($_a_cBody)): echo $_a_cBody; endif; ?>
 
+<?php if (empty($hideChrome)): ?>
 <!-- ── Navbar ──────────────────────────────────────────────────── -->
 <nav class="navbar navbar-expand-lg cms-navbar sticky-top shadow-sm">
     <div class="container">
         <a class="navbar-brand cms-brand" href="<?= BASE_URL ?>">
-            <i class="fas fa-layer-group me-2"></i><?= e(siteName()) ?>
+            <?php if ($_siteLogo = siteLogoUrl()): ?>
+                <img src="<?= e($_siteLogo) ?>" alt="<?= e(siteName()) ?>" class="cms-brand-logo">
+            <?php else: ?>
+                <i class="fas fa-layer-group me-2"></i><?= e(siteName()) ?>
+            <?php endif; ?>
         </a>
 
         <!-- Mobile: show logout directly if logged in -->
@@ -267,5 +275,6 @@ if (!empty($_a_cBody)): echo $_a_cBody; endif; ?>
         </div>
     </div>
 </nav>
+<?php endif; ?>
 
-<main class="container py-4">
+<main class="<?= empty($hideChrome) ? 'container py-4' : 'cms-chromeless-main' ?>">

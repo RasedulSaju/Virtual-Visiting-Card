@@ -215,6 +215,62 @@ function uploadProfileImage(array $file, int $userId): string
     return $newName;
 }
 
+// ── Site branding (logo / favicon) ─────────────────────────────
+// Stored in uploads/pages/ (reuses the same directory as page images —
+// no separate folder needed for a couple of small site-wide assets).
+function uploadSiteImage(array $file, array $allowedExt = ['jpg', 'jpeg', 'png', 'gif', 'svg', 'ico']): string
+{
+    if ($file['error'] !== UPLOAD_ERR_OK) {
+        throw new RuntimeException('Upload failed. Please try again.');
+    }
+
+    $limitMb    = (int)getSetting('upload_limit_mb', '2');
+    $limitBytes = $limitMb > 0 ? $limitMb * 1024 * 1024 : MAX_UPLOAD_SIZE;
+    if ($file['size'] > $limitBytes) {
+        throw new RuntimeException("File too large. Maximum size is {$limitMb} MB.");
+    }
+
+    $ext = strtolower(pathinfo($file['name'], PATHINFO_EXTENSION));
+    if (!in_array($ext, $allowedExt, true)) {
+        throw new RuntimeException('Invalid file type. Allowed: ' . implode(', ', $allowedExt));
+    }
+
+    // SVG/ICO don't reliably resolve via finfo image/* mime types — only
+    // MIME-sniff the raster formats; SVG/ICO already passed the extension check.
+    if (!in_array($ext, ['svg', 'ico'], true)) {
+        $finfo = new finfo(FILEINFO_MIME_TYPE);
+        $mime  = $finfo->file($file['tmp_name']);
+        if (!in_array($mime, ['image/jpeg', 'image/png', 'image/gif'], true)) {
+            throw new RuntimeException('File content does not match an allowed image type.');
+        }
+    }
+
+    if (!is_dir(UPLOAD_DIR_PAGES) && !mkdir(UPLOAD_DIR_PAGES, 0755, true)) {
+        throw new RuntimeException('Upload directory could not be created.');
+    }
+
+    $newName = 'site_' . bin2hex(random_bytes(6)) . '.' . $ext;
+    $dest    = UPLOAD_DIR_PAGES . $newName;
+
+    if (!move_uploaded_file($file['tmp_name'], $dest)) {
+        throw new RuntimeException('Could not save the uploaded file. Check directory permissions.');
+    }
+
+    return $newName;
+}
+
+function siteLogoUrl(): ?string
+{
+    $file = getSetting('logo_image', '');
+    return $file !== '' ? UPLOAD_URL_PAGES . $file : null;
+}
+
+function siteFaviconUrl(): ?string
+{
+    $file = getSetting('favicon_image', '');
+    return $file !== '' ? UPLOAD_URL_PAGES . $file : null;
+}
+
 // ── Delete old profile image (skip default) ──────────────────
 function deleteProfileImage(string $filename): void
 {
@@ -223,6 +279,15 @@ function deleteProfileImage(string $filename): void
         if (file_exists($path)) {
             @unlink($path);
         }
+    }
+}
+
+function deleteSiteImage(string $filename): void
+{
+    if ($filename === '') return;
+    $path = UPLOAD_DIR_PAGES . $filename;
+    if (file_exists($path)) {
+        @unlink($path);
     }
 }
 

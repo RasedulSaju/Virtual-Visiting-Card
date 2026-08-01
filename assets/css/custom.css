@@ -41,6 +41,17 @@ h1, h2, h3, h4, h5, h6,
 
 main.container { flex: 1; }
 
+/* Chromeless view (Admin → Settings → General → hide nav/footer on profiles) */
+.cms-chromeless-main {
+    flex: 1;
+    max-width: 720px;
+    margin: 0 auto;
+    padding: 2rem 1rem;
+}
+@media (min-width: 768px) {
+    .cms-chromeless-main { padding: 3rem 1rem; }
+}
+
 /* ── Navbar ──────────────────────────────────────────────────── */
 .cms-navbar {
     background: var(--cms-surface) !important;
@@ -54,6 +65,16 @@ main.container { flex: 1; }
     font-size: 1.15rem;
     color: var(--cms-primary) !important;
     text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+}
+
+.cms-brand-logo {
+    max-height: 40px;
+    max-width: 200px;
+    width: auto;
+    height: auto;
+    object-fit: contain;
 }
 
 .cms-navbar .nav-link {

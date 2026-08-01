@@ -1,5 +1,6 @@
 </main><!-- /main.container -->
 
+<?php if (empty($hideChrome)): ?>
 <!-- ── Footer ─────────────────────────────────────────────────── -->
 <footer class="cms-footer mt-auto py-4">
     <div class="container">
@@ -57,6 +58,7 @@
         </div>
     </div>
 </footer>
+<?php endif; ?>
 
 <?php
 // ── MDB JS — Pro (if uploaded) > bundled free (in-repo) > CDN (last resort) ──
