@@ -9,7 +9,7 @@ $page    = max(1, (int)($_GET['p'] ?? 1));
 $perPage = 12;
 $offset  = ($page - 1) * $perPage;
 
-$where  = "WHERE role = 'user' AND show_in_directory = 1 AND account_status = 'active'";
+$where  = "WHERE role IN ('user', 'admin') AND show_in_directory = 1 AND account_status = 'active'";
 $params = [];
 if ($search !== '') {
     $where   .= ' AND (username LIKE ? OR bio LIKE ?)';
@@ -23,7 +23,7 @@ $total = (int)$countStmt->fetchColumn();
 $pages = (int)ceil($total / $perPage);
 
 $listStmt = $pdo->prepare(
-    "SELECT id, username, full_name, profile_image, bio, created_at
+    "SELECT id, username, full_name, role, profile_image, bio, created_at
      FROM users $where
      ORDER BY created_at DESC
      LIMIT $perPage OFFSET $offset"
@@ -86,6 +86,9 @@ require __DIR__ . '/templates/layout_header.php';
                                  alt="<?= e($mName) ?>">
                         </div>
                         <h6 class="fw-bold mb-1 mt-1 text-dark"><?= e($mName) ?></h6>
+                        <?php if ($m['role'] === 'admin'): ?>
+                            <span class="badge bg-danger mb-1" style="font-size:.65rem;">Administrator</span>
+                        <?php endif; ?>
                         <?php if ($m['bio']): ?>
                             <p class="text-muted small mb-0" style="
                                 display:-webkit-box;-webkit-line-clamp:2;
