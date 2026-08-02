@@ -277,4 +277,4 @@ if (!empty($_a_cBody)): echo $_a_cBody; endif; ?>
 </nav>
 <?php endif; ?>
 
-<main class="<?= empty($hideChrome) ? 'container py-4' : 'cms-chromeless-main' ?>">
+<main class="<?= empty($hideChrome) ? 'container py-4' : 'container cms-chromeless-main py-4' ?>">
