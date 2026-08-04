@@ -29,7 +29,11 @@ function e(string $s): string
 function assetUrl(string $relativePath): string
 {
     $fsPath  = rtrim(__DIR__, '/') . '/' . ltrim($relativePath, '/');
-    $version = file_exists($fsPath) ? filemtime($fsPath) : time();
+    if (file_exists($fsPath)) {
+        $version = substr(md5_file($fsPath), 0, 10);
+    } else {
+        $version = (string)time();
+    }
     return BASE_URL . ltrim($relativePath, '/') . '?v=' . $version;
 }
 
