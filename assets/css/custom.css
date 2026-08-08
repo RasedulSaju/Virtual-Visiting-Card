@@ -44,7 +44,7 @@ main.container { flex: 1; }
 /* Chromeless view (Admin → Settings → General → hide nav/footer on profiles) */
 .cms-chromeless-main {
     flex: 1;
-    max-width: 720px;
+    max-width: 992px;
     margin: 0 auto;
     padding: 2rem 1rem;
 }
